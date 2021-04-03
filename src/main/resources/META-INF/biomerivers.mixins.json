@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "package": "com.fuzs.biomerivers.mixin",
+  "refmap": "biomerivers.refmap.json",
+  "mixins": [
+    "AddBambooForestLayerMixin",
+    "LakeLavaMixin",
+    "LakeWaterMixin",
+    "MixRiverLayerMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
