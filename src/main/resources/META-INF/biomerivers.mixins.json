@@ -5,7 +5,7 @@
   "package": "com.fuzs.biomerivers.mixin",
   "refmap": "biomerivers.refmap.json",
   "mixins": [
-    "AddBambooForestLayerMixin",
+    "FenceBlockMixin",
     "LakeLavaMixin",
     "LakeWaterMixin",
     "MixRiverLayerMixin"
