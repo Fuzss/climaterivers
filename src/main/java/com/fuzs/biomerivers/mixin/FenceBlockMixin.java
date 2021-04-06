@@ -85,9 +85,9 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         IBlockReader iblockreader = context.getWorld();
         BlockPos blockpos = context.getPos();
         FluidState fluidstate = context.getWorld().getFluidState(context.getPos());
-        BlockPos[] positions = new BlockPos[]{blockpos.north(), blockpos.east(), blockpos.south(), blockpos.west(), blockpos.north().east(), blockpos.south().east(), blockpos.south().west(), blockpos.north().west()};
+
+        BlockPos[] positions = Stream.of(EightWayDirection.values()).map(EightWayDirection::getDirectionVec).map(blockpos::add).toArray(BlockPos[]::new);
         BlockState[] states = Stream.of(positions).map(iblockreader::getBlockState).toArray(BlockState[]::new);
-        BlockState stateForPlacement = super.getStateForPlacement(context);
         int connections = 0;
         for (int i = 0; i < 4; i++) {
 
@@ -98,17 +98,21 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
             }
         }
 
-        stateForPlacement.with(NORTH, (connections >> 0 & 1) == 1);
-        stateForPlacement.with(EAST, (connections >> 1 & 1) == 1);
-        stateForPlacement.with(SOUTH, (connections >> 2 & 1) == 1);
-        stateForPlacement.with(WEST, (connections >> 3 & 1) == 1);
-        stateForPlacement.with(NORTH_EAST, this.canConnect(states[4]) && (connections >> 0 & 1) == 0 && (connections >> 1 & 1) == 0);
-        stateForPlacement.with(SOUTH_EAST, this.canConnect(states[5]) && (connections >> 1 & 1) == 0 && (connections >> 2 & 1) == 0);
-        stateForPlacement.with(SOUTH_WEST, this.canConnect(states[6]) && (connections >> 2 & 1) == 0 && (connections >> 3 & 1) == 0);
-        stateForPlacement.with(NORTH_WEST, this.canConnect(states[7]) && (connections >> 3 & 1) == 0 && (connections >> 0 & 1) == 0);
+        BlockState stateForPlacement = super.getStateForPlacement(context)
+                .with(SOUTH, (connections & 1) != 0)
+                .with(WEST, (connections & 2) != 0)
+                .with(NORTH, (connections & 4) != 0)
+                .with(EAST, (connections & 8) != 0)
+                .with(SOUTH_WEST, this.canConnect(states[4]) && (connections & 1) == 0 && (connections & 2) == 0)
+                .with(NORTH_WEST, this.canConnect(states[5]) && (connections & 2) == 0 && (connections & 4) == 0)
+                .with(NORTH_EAST, this.canConnect(states[6]) && (connections & 4) == 0 && (connections & 8) == 0)
+                .with(SOUTH_EAST, this.canConnect(states[7]) && (connections & 8) == 0 && (connections & 1) == 0)
+                .with(WATERLOGGED, fluidstate.getFluid() == Fluids.WATER);
 
-        callbackInfo.setReturnValue(stateForPlacement.with(WATERLOGGED, fluidstate.getFluid() == Fluids.WATER));
+        callbackInfo.setReturnValue(stateForPlacement);
     }
+
+
 
     @SuppressWarnings("NullableProblems")
     @Override
@@ -123,10 +127,10 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         VoxelShape eastShape = Block.makeCuboidShape(16.0 - extensionEnd, extensionBottom, extensionStart, 16.0, extensionHeight, extensionEnd);
         VoxelShape southShape = Block.makeCuboidShape(extensionStart, extensionBottom, 16.0 - extensionEnd, extensionEnd, extensionHeight, 16.0);
         VoxelShape westShape = Block.makeCuboidShape(0.0, extensionBottom, extensionStart, extensionStart, extensionHeight, extensionEnd);
-        VoxelShape northEastShape = this.getDiagonalShapeB(extensionWidth, extensionBottom, extensionHeight, false, true);
-        VoxelShape southEastShape = this.getDiagonalShapeB(extensionWidth, extensionBottom, extensionHeight, false, false);
-        VoxelShape southWestShape = this.getDiagonalShapeB(extensionWidth, extensionBottom, extensionHeight, true, false);
-        VoxelShape northWestShape = this.getDiagonalShapeB(extensionWidth, extensionBottom, extensionHeight, true, true);
+        VoxelShape northEastShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, false, true);
+        VoxelShape southEastShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, false, false);
+        VoxelShape southWestShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, true, false);
+        VoxelShape northWestShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, true, true);
 
         VoxelShape[] directionalShapes = new VoxelShape[]{southShape, westShape, northShape, eastShape, southWestShape, northWestShape, northEastShape, southEastShape};
         VoxelShape[] stateShapes = new VoxelShape[(int) Math.pow(2, directionalShapes.length)];
@@ -176,6 +180,7 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         Vector3d top4 = new Vector3d(bottom4.x, extensionHeight, bottom4.z);
 
         List<Vector3d> boundingEdges = Arrays.asList(
+
                 // Bottom
                 bottom1, bottom2,
                 bottom2, bottom3,

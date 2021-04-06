@@ -21,10 +21,10 @@ public interface IEightWayBlock {
         directions.put(EightWayDirection.EAST, SixWayBlock.EAST);
         directions.put(EightWayDirection.SOUTH, SixWayBlock.SOUTH);
         directions.put(EightWayDirection.WEST, SixWayBlock.WEST);
-        directions.put(EightWayDirection.NORTH_EAST, SixWayBlock.NORTH);
-        directions.put(EightWayDirection.SOUTH_EAST, SixWayBlock.EAST);
-        directions.put(EightWayDirection.SOUTH_WEST, SixWayBlock.SOUTH);
-        directions.put(EightWayDirection.NORTH_WEST, SixWayBlock.WEST);
+        directions.put(EightWayDirection.NORTH_EAST, NORTH_EAST);
+        directions.put(EightWayDirection.SOUTH_EAST, SOUTH_EAST);
+        directions.put(EightWayDirection.SOUTH_WEST, SOUTH_WEST);
+        directions.put(EightWayDirection.NORTH_WEST, NORTH_WEST);
     });
 
     default void fillEightWayStateContainer(StateContainer.Builder<Block, BlockState> builder) {

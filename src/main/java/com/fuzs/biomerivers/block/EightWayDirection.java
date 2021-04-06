@@ -3,18 +3,17 @@ package com.fuzs.biomerivers.block;
 import net.minecraft.util.math.vector.Vector3i;
 
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 public enum EightWayDirection {
 
-    SOUTH(0, -1),
+    SOUTH(0, 1),
     WEST(-1, 0),
-    NORTH(0, 1),
+    NORTH(0, -1),
     EAST(1, 0),
-    SOUTH_WEST(-1, -1),
-    NORTH_WEST(-1, 1),
-    NORTH_EAST(1, 1),
-    SOUTH_EAST(1, -1);
+    SOUTH_WEST(-1, 1),
+    NORTH_WEST(-1, -1),
+    NORTH_EAST(1, -1),
+    SOUTH_EAST(1, 1);
 
     private final Vector3i directionVec;
     private final int horizontalIndex = 1 << this.ordinal();
