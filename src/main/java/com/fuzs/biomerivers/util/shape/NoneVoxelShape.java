@@ -1,63 +1,62 @@
 package com.fuzs.biomerivers.util.shape;
 
 import com.fuzs.biomerivers.mixin.accessor.IVoxelShapeAccessor;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.shapes.BitSetVoxelShapePart;
-import net.minecraft.util.math.shapes.SplitVoxelShape;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.math.vector.Vector3d;
 
-import java.util.Iterator;
 import java.util.List;
 
 @SuppressWarnings("NullableProblems")
-public class NoneVoxelShape extends SplitVoxelShape {
+public class NoneVoxelShape extends ExtensibleVoxelShape {
 
-    private final IVoxelShapeAccessor valuesAccessor;
-    private VoxelShape parent;
-    private final List<Vector3d> edges;
+    private final VoxelShape collisionShape;
+    private final VoxelShape outlineShapeBase;
+    private final List<Vector3d[]> outlineShapeEdges;
 
-    public NoneVoxelShape(VoxelShape asVoxelShape, VoxelShape parent, List<Vector3d> edges) {
+    public NoneVoxelShape(VoxelShape collisionShape, Vector3d... outlineShapeEdges) {
 
-        this(asVoxelShape, edges);
-        this.parent = parent;
+        this(collisionShape, VoxelShapes.empty(), outlineShapeEdges);
     }
 
-    public NoneVoxelShape(VoxelShape asVoxelShape, List<Vector3d> edges) {
+    public NoneVoxelShape(VoxelShape collisionShape, VoxelShape outlineShapeBase, Vector3d... outlineShapeEdges) {
 
-        super(asVoxelShape, Direction.Axis.X, 0);
-        this.valuesAccessor = (IVoxelShapeAccessor) asVoxelShape;
-        ((IVoxelShapeAccessor) this).setPart(new BitSetVoxelShapePart(this.valuesAccessor.getPart()));
+        super(collisionShape);
 
-        assert edges.size() % 2 == 0 : "Edges must be in groups of two points";
-        this.edges = edges;
+        this.collisionShape = collisionShape;
+        this.outlineShapeBase = outlineShapeBase;
+        this.outlineShapeEdges = this.createOutlineList(outlineShapeEdges);
+    }
+
+    private List<Vector3d[]> createOutlineList(Vector3d[] outlineShapeEdges) {
+
+        assert outlineShapeEdges.length % 2 == 0 : "Edges must be in groups of two points";
+
+        List<Vector3d[]> list = Lists.newArrayList();
+        for (int i = 0; i < outlineShapeEdges.length; i += 2) {
+
+            list.add(new Vector3d[]{outlineShapeEdges[i], outlineShapeEdges[i + 1]});
+        }
+
+        return list;
     }
 
     @Override
-    public DoubleList getValues(Direction.Axis axis) {
+    protected DoubleList getValues(Direction.Axis axis) {
 
-        return this.valuesAccessor.callGetValues(axis);
+        return ((IVoxelShapeAccessor) this.collisionShape).callGetValues(axis);
     }
 
     @Override
     public void forEachEdge(VoxelShapes.ILineConsumer boxConsumer) {
 
-        Iterator<Vector3d> iter = this.edges.iterator();
-        while (iter.hasNext()) {
+        this.outlineShapeBase.forEachEdge(boxConsumer);
+        for (Vector3d[] edge : this.outlineShapeEdges) {
 
-            Vector3d p1 = iter.next();
-            Vector3d p2 = iter.next();
-            boxConsumer.consume(
-                    p1.x, p1.y, p1.z,
-                    p2.x, p2.y, p2.z
-            );
-        }
-
-        if (this.parent != null) {
-
-            this.parent.forEachEdge(boxConsumer);
+            boxConsumer.consume(edge[0].x, edge[0].y, edge[0].z, edge[1].x, edge[1].y, edge[1].z);
         }
     }
 

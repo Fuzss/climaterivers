@@ -209,7 +209,8 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
             boundingEdges = boundingEdges.stream().map(vec3d -> new Vector3d(vec3d.x, vec3d.y, 1.0 - vec3d.z)).collect(Collectors.toList());
         }
 
-        return new NoneVoxelShape(diagonalShape, boundingEdges);
+        return null;
+//        return new NoneVoxelShape(diagonalShape, boundingEdges);
     }
 
     @SuppressWarnings({"NullableProblems", "deprecation"})
