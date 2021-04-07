@@ -24,10 +24,10 @@ import java.util.List;
 public abstract class LecternBlockMixin extends ContainerBlock {
 
     private static final Vector3d[] CORNERS = new Vector3d[]{new Vector3d(0.319134879, 13.4776191, 0.01), new Vector3d(12.3295688, 18.45250372, 0.01), new Vector3d(1.849868608, 9.782100968, 0.01), new Vector3d(13.86030253, 14.75698559, 0.01), new Vector3d(0.319134879, 13.4776191, 15.99), new Vector3d(12.3295688, 18.45250372, 15.99), new Vector3d(1.849868608, 9.782100968, 15.99), new Vector3d(13.86030253, 14.75698559, 15.99)};
-    private static final VoxelShape SKEW_WEST_SHAPE = VoxelShapes.or(new NoneVoxelShape(VoxelShapes.or(Block.makeCuboidShape(1.0D, 10.0D, 0.0D, 5.333333D, 14.0D, 16.0D), Block.makeCuboidShape(5.333333D, 12.0D, 0.0D, 9.666667D, 16.0D, 16.0D), Block.makeCuboidShape(9.666667D, 14.0D, 0.0D, 14.0D, 18.0D, 16.0D)), createEdges(transformCorners(CORNERS, false, false))), LecternBlock.COMMON_SHAPE);
-    private static final VoxelShape SKEW_NORTH_SHAPE = VoxelShapes.or(new NoneVoxelShape(VoxelShapes.or(Block.makeCuboidShape(0.0D, 10.0D, 1.0D, 16.0D, 14.0D, 5.333333D), Block.makeCuboidShape(0.0D, 12.0D, 5.333333D, 16.0D, 16.0D, 9.666667D), Block.makeCuboidShape(0.0D, 14.0D, 9.666667D, 16.0D, 18.0D, 14.0D)), createEdges(transformCorners(CORNERS, false, true))), LecternBlock.COMMON_SHAPE);
-    private static final VoxelShape SKEW_EAST_SHAPE = VoxelShapes.or(new NoneVoxelShape(VoxelShapes.or(Block.makeCuboidShape(15.0D, 10.0D, 0.0D, 10.666667D, 14.0D, 16.0D), Block.makeCuboidShape(10.666667D, 12.0D, 0.0D, 6.333333D, 16.0D, 16.0D), Block.makeCuboidShape(6.333333D, 14.0D, 0.0D, 2.0D, 18.0D, 16.0D)), createEdges(transformCorners(CORNERS, true, false))), LecternBlock.COMMON_SHAPE);
-    private static final VoxelShape SKEW_SOUTH_SHAPE = VoxelShapes.or(new NoneVoxelShape(VoxelShapes.or(Block.makeCuboidShape(0.0D, 10.0D, 15.0D, 16.0D, 14.0D, 10.666667D), Block.makeCuboidShape(0.0D, 12.0D, 10.666667D, 16.0D, 16.0D, 6.333333D), Block.makeCuboidShape(0.0D, 14.0D, 6.333333D, 16.0D, 18.0D, 2.0D)), createEdges(transformCorners(CORNERS, true, true))), LecternBlock.COMMON_SHAPE);
+    private static final VoxelShape SKEW_WEST_SHAPE = new NoneVoxelShape(LecternBlock.WEST_SHAPE, LecternBlock.COMMON_SHAPE, createEdges(transformCorners(CORNERS, false, false)));
+    private static final VoxelShape SKEW_NORTH_SHAPE = new NoneVoxelShape(LecternBlock.NORTH_SHAPE, LecternBlock.COMMON_SHAPE, createEdges(transformCorners(CORNERS, false, true)));
+    private static final VoxelShape SKEW_EAST_SHAPE = new NoneVoxelShape(LecternBlock.EAST_SHAPE, LecternBlock.COMMON_SHAPE, createEdges(transformCorners(CORNERS, true, false)));
+    private static final VoxelShape SKEW_SOUTH_SHAPE = new NoneVoxelShape(LecternBlock.SOUTH_SHAPE, LecternBlock.COMMON_SHAPE, createEdges(transformCorners(CORNERS, true, true)));
 
     private static Vector3d[] transformCorners(Vector3d[] corners, boolean flipX, boolean flipZ) {
 
@@ -55,23 +55,23 @@ public abstract class LecternBlockMixin extends ContainerBlock {
 
         return Arrays.asList(
 
-                // Bottom
+                // skew side
                 corners[0], corners[1],
-                corners[1], corners[2],
-                corners[2], corners[3],
-                corners[3], corners[0],
+                corners[1], corners[3],
+                corners[3], corners[2],
+                corners[2], corners[0],
 
-                // Sides
+                // connections between skew sides
                 corners[0], corners[4],
                 corners[1], corners[5],
                 corners[2], corners[6],
                 corners[3], corners[7],
 
-                // Top
+                // other skew side
                 corners[4], corners[5],
-                corners[5], corners[6],
-                corners[6], corners[7],
-                corners[7], corners[4]
+                corners[5], corners[7],
+                corners[7], corners[6],
+                corners[6], corners[4]
         );
     }
 
