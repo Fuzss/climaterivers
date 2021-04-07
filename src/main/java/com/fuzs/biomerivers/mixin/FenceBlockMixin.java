@@ -123,23 +123,23 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         float extensionStart = 8.0F - extensionWidth;
         float extensionEnd = 8.0F + extensionWidth;
         VoxelShape nodeShape = Block.makeCuboidShape(nodeStart, 0.0, nodeStart, nodeEnd, nodeHeight, nodeEnd);
-        VoxelShape northShape = Block.makeCuboidShape(extensionStart, extensionBottom, 0.0, extensionEnd, extensionHeight, extensionStart);
-        VoxelShape eastShape = Block.makeCuboidShape(16.0 - extensionEnd, extensionBottom, extensionStart, 16.0, extensionHeight, extensionEnd);
-        VoxelShape southShape = Block.makeCuboidShape(extensionStart, extensionBottom, 16.0 - extensionEnd, extensionEnd, extensionHeight, 16.0);
-        VoxelShape westShape = Block.makeCuboidShape(0.0, extensionBottom, extensionStart, extensionStart, extensionHeight, extensionEnd);
-        VoxelShape northEastShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, false, true);
-        VoxelShape southEastShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, false, false);
-        VoxelShape southWestShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, true, false);
-        VoxelShape northWestShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, true, true);
+        VoxelShape southShape = Block.makeCuboidShape(extensionStart, extensionBottom, 0.0, extensionEnd, extensionHeight, extensionStart);
+        VoxelShape westShape = Block.makeCuboidShape(16.0 - extensionEnd, extensionBottom, extensionStart, 16.0, extensionHeight, extensionEnd);
+        VoxelShape northShape = Block.makeCuboidShape(extensionStart, extensionBottom, 16.0 - extensionEnd, extensionEnd, extensionHeight, 16.0);
+        VoxelShape eastShape = Block.makeCuboidShape(0.0, extensionBottom, extensionStart, extensionStart, extensionHeight, extensionEnd);
+        VoxelShape southWestShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, EightWayDirection.SOUTH_WEST);
+        VoxelShape northWestShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, EightWayDirection.NORTH_WEST);
+        VoxelShape northEastShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, EightWayDirection.NORTH_EAST);
+        VoxelShape southEastShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, EightWayDirection.SOUTH_EAST);
 
-        VoxelShape[] directionalShapes = new VoxelShape[]{southShape, westShape, northShape, eastShape, southWestShape, northWestShape, northEastShape, southEastShape};
+        VoxelShape[] directionalShapes = new VoxelShape[]{northShape, eastShape, southShape, westShape, northEastShape, southEastShape, southWestShape, northWestShape};
         VoxelShape[] stateShapes = new VoxelShape[(int) Math.pow(2, directionalShapes.length)];
         for (int i = 0; i < stateShapes.length; i++) {
 
             stateShapes[i] = nodeShape;
             for (int j = 0; j < directionalShapes.length; j++) {
 
-                if (((i >> j) & 1) == 1) {
+                if ((i & (1 << j)) != 0) {
 
                     stateShapes[i] = VoxelShapes.or(stateShapes[i], directionalShapes[j]);
                 }
@@ -149,13 +149,14 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         return stateShapes;
     }
 
-    private VoxelShape getDiagonalShape(float extensionWidth, float extensionBottom, float extensionHeight, boolean directionX, boolean directionZ) {
+    private VoxelShape getDiagonalShape(float extensionWidth, float extensionBottom, float extensionHeight, EightWayDirection direction) {
 
         VoxelShape diagonalShape = VoxelShapes.empty();
         for (int i = 0; i < 8; i++) {
 
-            int posX = directionX ? 16 - i : i;
-            int posZ = directionZ ? 16 - i : i;
+            Vector3i directionVec = direction.getDirectionVec();
+            int posX = directionVec.getX() > 0 ? i : 16 - i;
+            int posZ = directionVec.getZ() > 0 ? i : 16 - i;
             VoxelShape cubeShape = Block.makeCuboidShape(posX - extensionWidth, extensionBottom, posZ - extensionWidth, posX + extensionWidth, extensionHeight, posZ + extensionWidth);
             diagonalShape = VoxelShapes.or(diagonalShape, cubeShape);
         }
@@ -163,12 +164,10 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         return diagonalShape;
     }
 
-    private VoxelShape getDiagonalShapeB(float extensionWidth, float extensionBottom, float extensionHeight, boolean directionX, boolean directionZ) {
+    private VoxelShape getDiagonalShapeB(float extensionWidth, float extensionBottom, float extensionHeight, EightWayDirection direction) {
 
-        VoxelShape diagonalShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, directionX, directionZ);
+        VoxelShape diagonalShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, direction);
 
-        double multX = directionX ? 1.0 : -1.0;
-        double multZ = directionZ ? 1.0 : -1.0;
         final float diagonalSide = 0.7071067812F * extensionWidth;
         Vector3d bottom1 = new Vector3d(-diagonalSide, extensionBottom, diagonalSide);
         Vector3d bottom2 = new Vector3d(diagonalSide, extensionBottom, -diagonalSide);
@@ -200,12 +199,12 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
                 top4, top1
         );
 
-        if (!directionX) {
+        if (direction.getDirectionVec().getX() != 1) {
 
             boundingEdges = boundingEdges.stream().map(vec3d -> new Vector3d(1.0 - vec3d.x, vec3d.y, vec3d.z)).collect(Collectors.toList());
         }
 
-        if (!directionZ) {
+        if (direction.getDirectionVec().getZ() != 1) {
 
             boundingEdges = boundingEdges.stream().map(vec3d -> new Vector3d(vec3d.x, vec3d.y, 1.0 - vec3d.z)).collect(Collectors.toList());
         }
@@ -223,9 +222,9 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
             Vector3i directionVec = direction.getDirectionVec();
             neighborPos.setAndOffset(pos, directionVec.getX(), directionVec.getY(), directionVec.getZ());
             BlockState neighborState = world.getBlockState(neighborPos);
-            if (this.canConnect(neighborState) && neighborState.getBlock() instanceof FenceBlock) {
+            if (neighborState.getBlock() instanceof FenceBlock) {
 
-                BlockState neighborPostUpdateState = neighborState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.getOpposite()), this.canConnect(state));
+                BlockState neighborPostUpdateState = neighborState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.getOpposite()), this.canConnect(neighborState));
                 Block.replaceBlockState(neighborState, neighborPostUpdateState, world, neighborPos, flags, recursionLeft);
             }
         }

@@ -9,6 +9,7 @@
     "FenceBlockMixin",
     "LakeLavaMixin",
     "LakeWaterMixin",
+    "LecternBlockMixin",
     "MixRiverLayerMixin"
   ],
   "client": [
