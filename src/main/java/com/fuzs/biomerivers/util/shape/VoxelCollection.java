@@ -11,7 +11,8 @@ import java.util.List;
 
 public class VoxelCollection extends ExtensibleVoxelShape {
 
-    private VoxelShape voxelProvider;
+    private VoxelShape collisionShape;
+    private VoxelShape outlineShape;
     private final List<NoneVoxelShape> noneVoxels = Lists.newArrayList();
 
     public VoxelCollection() {
@@ -19,42 +20,49 @@ public class VoxelCollection extends ExtensibleVoxelShape {
         this(VoxelShapes.empty());
     }
 
-    public VoxelCollection(VoxelShape voxelProvider) {
+    public VoxelCollection(VoxelShape baseShape) {
 
-        super(voxelProvider);
-        this.voxelProvider = voxelProvider;
+        super(baseShape);
+        this.collisionShape = baseShape;
+        this.outlineShape = baseShape;
     }
 
     @Override
     protected DoubleList getValues(Direction.Axis axis) {
 
-        return ((IVoxelShapeAccessor) this.voxelProvider).callGetValues(axis);
+        return ((IVoxelShapeAccessor) this.collisionShape).callGetValues(axis);
     }
 
-    private void setVoxelProvider(VoxelShape voxelShape) {
+    private void setCollisionShape(VoxelShape voxelShape) {
 
-        this.voxelProvider = voxelShape;
-        this.setPart(((IVoxelShapeAccessor) this.voxelProvider).getPart());
+        this.collisionShape = voxelShape;
+        this.setVoxelPart(((IVoxelShapeAccessor) this.collisionShape).getPart());
     }
 
-    public VoxelCollection addVoxelShape(VoxelShape voxelShape) {
+    public void addVoxelShape(VoxelShape voxelShape) {
 
-        this.setVoxelProvider(VoxelShapes.or(this.voxelProvider, voxelShape));
-        return this;
+        if (voxelShape instanceof NoneVoxelShape) {
+
+            this.addNoneVoxelShape((NoneVoxelShape) voxelShape);
+        } else {
+
+            this.setCollisionShape(VoxelShapes.or(this.collisionShape, voxelShape));
+            this.outlineShape = VoxelShapes.or(this.outlineShape, voxelShape);
+        }
     }
 
-    public VoxelCollection addNoneVoxelShape(NoneVoxelShape voxelShape) {
+    private void addNoneVoxelShape(NoneVoxelShape voxelShape) {
 
         this.noneVoxels.add(voxelShape);
         // combine collision shapes
-        return this.addVoxelShape(voxelShape);
+        this.setCollisionShape(VoxelShapes.or(this.collisionShape, voxelShape));
     }
 
     @SuppressWarnings("NullableProblems")
     @Override
     public void forEachEdge(VoxelShapes.ILineConsumer boxConsumer) {
 
-        this.voxelProvider.forEachEdge(boxConsumer);
+        this.outlineShape.forEachEdge(boxConsumer);
         this.noneVoxels.forEach(voxelShape -> voxelShape.forEachEdge(boxConsumer));
     }
 

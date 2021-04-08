@@ -5,7 +5,6 @@
   "package": "com.fuzs.biomerivers.mixin",
   "refmap": "biomerivers.refmap.json",
   "mixins": [
-    "accessor.IDoubleRangeListAccessor",
     "accessor.IVoxelShapeAccessor",
     "FenceBlockMixin",
     "LakeLavaMixin",

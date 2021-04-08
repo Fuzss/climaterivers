@@ -12,14 +12,14 @@ public abstract class ExtensibleVoxelShape extends SplitVoxelShape {
     public ExtensibleVoxelShape(VoxelShape voxelProvider) {
 
         super(voxelProvider, Direction.Axis.X, 0);
-        this.setPart(((IVoxelShapeAccessor) voxelProvider).getPart());
+        this.setVoxelPart(((IVoxelShapeAccessor) voxelProvider).getPart());
     }
 
     @SuppressWarnings("NullableProblems")
     @Override
     protected abstract DoubleList getValues(Direction.Axis axis);
 
-    protected final void setPart(VoxelShapePart part) {
+    protected final void setVoxelPart(VoxelShapePart part) {
 
         ((IVoxelShapeAccessor) this).setPart(part);
     }

@@ -1,5 +1,6 @@
 package com.fuzs.biomerivers.block;
 
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3i;
 
 import java.util.Arrays;
@@ -33,7 +34,7 @@ public enum EightWayDirection {
         return this.horizontalIndex;
     }
 
-    public EightWayDirection getOpposite() {
+    public EightWayDirection opposite() {
 
         if (this.ordinal() >= 4) {
 
@@ -43,14 +44,34 @@ public enum EightWayDirection {
         return EightWayDirection.values()[(this.ordinal() + 2) % 4];
     }
 
-    public static EightWayDirection[] getCardinalDirections() {
+    public Direction convert() {
+
+        return Direction.byHorizontalIndex(this.ordinal());
+    }
+
+    public static EightWayDirection[] getAllCardinals() {
 
         return Arrays.copyOf(EightWayDirection.values(), 4);
     }
 
-    public static EightWayDirection[] getIntercardinalDirections() {
+    public static EightWayDirection[] getAllIntercardinals() {
 
         return Arrays.copyOfRange(EightWayDirection.values(), 4, 8);
+    }
+
+    public EightWayDirection[] getCardinals() {
+
+        return new EightWayDirection[]{EightWayDirection.values()[this.ordinal() % 4], EightWayDirection.values()[(this.ordinal() + 1) % 4]};
+    }
+
+    public EightWayDirection[] getIntercardinals() {
+
+        return new EightWayDirection[]{EightWayDirection.values()[(this.ordinal() + 3) % 4 + 4], EightWayDirection.values()[this.ordinal() + 4]};
+    }
+
+    public static EightWayDirection convert(Direction direction) {
+
+        return EightWayDirection.values()[direction.getHorizontalIndex()];
     }
 
 }

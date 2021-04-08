@@ -3,10 +3,17 @@ package com.fuzs.biomerivers.block;
 import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.FenceBlock;
 import net.minecraft.block.SixWayBlock;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
@@ -44,6 +51,48 @@ public interface IEightWayBlock {
         }
 
         return index;
+    }
+
+    boolean canConnectDiagonally(BlockState blockstate, BlockPos pos, IBlockReader iblockreader, EightWayDirection opposite);
+
+    default void updatePostPlacement(Direction facing, IWorld worldIn, BlockPos currentPos, CallbackInfoReturnable<BlockState> callbackInfo) {
+
+        if (facing.getAxis().getPlane() == Direction.Plane.HORIZONTAL) {
+
+            BlockState returnState = callbackInfo.getReturnValue();
+            EightWayDirection cardinal = EightWayDirection.convert(facing);
+            boolean isBlocked = returnState.get(DIRECTION_TO_PROPERTY_MAP.get(cardinal));
+            for (EightWayDirection direction : cardinal.getIntercardinals()) {
+
+                BlockPos pos = currentPos.add(direction.getDirectionVec());
+                BlockState diagonalState = worldIn.getBlockState(pos);
+                returnState = returnState.with(DIRECTION_TO_PROPERTY_MAP.get(direction), !isBlocked && this.canConnectDiagonally(diagonalState, pos, worldIn, direction.opposite()));
+            }
+
+            callbackInfo.setReturnValue(returnState);
+        }
+    }
+
+    default void updateDiagonalNeighbors(IWorld world, BlockPos pos, int flags, int recursionLeft) {
+
+        BlockPos.Mutable diagonalPos = new BlockPos.Mutable();
+        for (EightWayDirection direction : EightWayDirection.getAllIntercardinals()) {
+
+            Vector3i directionVec = direction.getDirectionVec();
+            diagonalPos.setAndOffset(pos, directionVec.getX(), directionVec.getY(), directionVec.getZ());
+            BlockState diagonalState = world.getBlockState(diagonalPos);
+            if (diagonalState.getBlock() instanceof FenceBlock) {
+
+                boolean isBlocked = false;
+                for (EightWayDirection cardinal : direction.opposite().getCardinals()) {
+
+                    isBlocked = isBlocked || diagonalState.get(DIRECTION_TO_PROPERTY_MAP.get(cardinal));
+                }
+
+                BlockState diagonalStateUpdated = diagonalState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.opposite()), !isBlocked && this.canConnectDiagonally(world.getBlockState(pos), pos, world, direction));
+                Block.replaceBlockState(diagonalState, diagonalStateUpdated, world, diagonalPos, flags, recursionLeft);
+            }
+        }
     }
 
 }

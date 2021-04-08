@@ -3,6 +3,8 @@ package com.fuzs.biomerivers.mixin;
 import com.fuzs.biomerivers.block.EightWayDirection;
 import com.fuzs.biomerivers.block.IEightWayBlock;
 import com.fuzs.biomerivers.util.shape.NoneVoxelShape;
+import com.fuzs.biomerivers.util.shape.VoxelCollection;
+import com.fuzs.biomerivers.util.shape.VoxelUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.*;
@@ -25,9 +27,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Mixin(FenceBlock.class)
@@ -67,9 +66,27 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
     @Shadow
     public abstract boolean canConnect(BlockState state, boolean isSideSolid, Direction direction);
 
-    public boolean canConnect(BlockState state) {
+    @Override
+    public boolean canConnectDiagonally(BlockState blockstate, BlockPos pos, IBlockReader iblockreader, EightWayDirection opposite) {
 
-        return this.isWoodenFence(state.getBlock());
+        Block block = blockstate.getBlock();
+        if (cannotAttach(block)) {
+
+            return false;
+        } else if (this.isWoodenFence(block)) {
+
+            return true;
+        }
+
+        for (EightWayDirection cardinalDirection : opposite.getCardinals()) {
+
+            if (!blockstate.isSolidSide(iblockreader, pos, cardinalDirection.convert())) {
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Shadow
@@ -91,7 +108,7 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         int connections = 0;
         for (int i = 0; i < 4; i++) {
 
-            Direction direction = Direction.byHorizontalIndex(i);
+            Direction direction = Direction.byHorizontalIndex(i).getOpposite();
             if (this.canConnect(states[i], states[i].isSolidSide(iblockreader, positions[i], direction), direction)) {
 
                 connections |= 1 << i;
@@ -103,10 +120,10 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
                 .with(WEST, (connections & 2) != 0)
                 .with(NORTH, (connections & 4) != 0)
                 .with(EAST, (connections & 8) != 0)
-                .with(SOUTH_WEST, this.canConnect(states[4]) && (connections & 1) == 0 && (connections & 2) == 0)
-                .with(NORTH_WEST, this.canConnect(states[5]) && (connections & 2) == 0 && (connections & 4) == 0)
-                .with(NORTH_EAST, this.canConnect(states[6]) && (connections & 4) == 0 && (connections & 8) == 0)
-                .with(SOUTH_EAST, this.canConnect(states[7]) && (connections & 8) == 0 && (connections & 1) == 0)
+                .with(SOUTH_WEST, this.canConnectDiagonally(states[4], positions[4], iblockreader, EightWayDirection.NORTH_EAST) && (connections & 1) == 0 && (connections & 2) == 0)
+                .with(NORTH_WEST, this.canConnectDiagonally(states[5], positions[5], iblockreader, EightWayDirection.SOUTH_EAST) && (connections & 2) == 0 && (connections & 4) == 0)
+                .with(NORTH_EAST, this.canConnectDiagonally(states[6], positions[6], iblockreader, EightWayDirection.SOUTH_WEST) && (connections & 4) == 0 && (connections & 8) == 0)
+                .with(SOUTH_EAST, this.canConnectDiagonally(states[7], positions[7], iblockreader, EightWayDirection.NORTH_WEST) && (connections & 8) == 0 && (connections & 1) == 0)
                 .with(WATERLOGGED, fluidstate.getFluid() == Fluids.WATER);
 
         callbackInfo.setReturnValue(stateForPlacement);
@@ -133,15 +150,15 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
         VoxelShape southEastShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, EightWayDirection.SOUTH_EAST);
 
         VoxelShape[] directionalShapes = new VoxelShape[]{northShape, eastShape, southShape, westShape, northEastShape, southEastShape, southWestShape, northWestShape};
-        VoxelShape[] stateShapes = new VoxelShape[(int) Math.pow(2, directionalShapes.length)];
+        VoxelCollection[] stateShapes = new VoxelCollection[(int) Math.pow(2, directionalShapes.length)];
         for (int i = 0; i < stateShapes.length; i++) {
 
-            stateShapes[i] = nodeShape;
+            stateShapes[i] = new VoxelCollection(nodeShape);
             for (int j = 0; j < directionalShapes.length; j++) {
 
                 if ((i & (1 << j)) != 0) {
 
-                    stateShapes[i] = VoxelShapes.or(stateShapes[i], directionalShapes[j]);
+                    stateShapes[i].addVoxelShape(directionalShapes[j]);
                 }
             }
         }
@@ -151,84 +168,51 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
 
     private VoxelShape getDiagonalShape(float extensionWidth, float extensionBottom, float extensionHeight, EightWayDirection direction) {
 
-        VoxelShape diagonalShape = VoxelShapes.empty();
+        VoxelShape diagonalShape = this.getDiagonalCollisionShape(extensionWidth, extensionBottom, extensionHeight, direction);
+        extensionWidth = (float) Math.sqrt(extensionWidth * extensionWidth * 2);
+        final float diagonalSide = 0.7071067812F * extensionWidth;
+        Vector3d[] corners = VoxelUtils.scaleDown(VoxelUtils.createVectorArray(-diagonalSide, extensionHeight, diagonalSide, -diagonalSide + 8.0F, extensionHeight, diagonalSide + 8.0F, -diagonalSide, extensionBottom, diagonalSide, -diagonalSide + 8.0F, extensionBottom, diagonalSide + 8.0F, diagonalSide, extensionHeight, -diagonalSide, diagonalSide + 8.0F, extensionHeight, -diagonalSide + 8.0F, diagonalSide, extensionBottom, -diagonalSide, diagonalSide + 8.0F, extensionBottom, -diagonalSide + 8.0F));
+        Vector3d[] edges = VoxelUtils.create12Edges(corners);
+
+        if (direction.getDirectionVec().getX() != 1) {
+
+            edges = VoxelUtils.flipX(edges);
+        }
+
+        if (direction.getDirectionVec().getZ() != 1) {
+
+            edges = VoxelUtils.flipZ(edges);
+        }
+
+        return new NoneVoxelShape(diagonalShape, edges);
+    }
+
+    private VoxelShape getDiagonalCollisionShape(float extensionWidth, float extensionBottom, float extensionHeight, EightWayDirection direction) {
+
+        VoxelShape collisionShape = VoxelShapes.empty();
         for (int i = 0; i < 8; i++) {
 
             Vector3i directionVec = direction.getDirectionVec();
             int posX = directionVec.getX() > 0 ? i : 16 - i;
             int posZ = directionVec.getZ() > 0 ? i : 16 - i;
             VoxelShape cubeShape = Block.makeCuboidShape(posX - extensionWidth, extensionBottom, posZ - extensionWidth, posX + extensionWidth, extensionHeight, posZ + extensionWidth);
-            diagonalShape = VoxelShapes.or(diagonalShape, cubeShape);
+            collisionShape = VoxelShapes.or(collisionShape, cubeShape);
         }
 
-        return diagonalShape;
-    }
-
-    private VoxelShape getDiagonalShapeB(float extensionWidth, float extensionBottom, float extensionHeight, EightWayDirection direction) {
-
-        VoxelShape diagonalShape = this.getDiagonalShape(extensionWidth, extensionBottom, extensionHeight, direction);
-
-        final float diagonalSide = 0.7071067812F * extensionWidth;
-        Vector3d bottom1 = new Vector3d(-diagonalSide, extensionBottom, diagonalSide);
-        Vector3d bottom2 = new Vector3d(diagonalSide, extensionBottom, -diagonalSide);
-        Vector3d bottom3 = bottom1.add(8.0, 0.0, 8.0);
-        Vector3d bottom4 = bottom2.add(8.0, 0.0, 8.0);
-        Vector3d top1 = new Vector3d(bottom1.x, extensionHeight, bottom1.z);
-        Vector3d top2 = new Vector3d(bottom2.x, extensionHeight, bottom2.z);
-        Vector3d top3 = new Vector3d(bottom3.x, extensionHeight, bottom3.z);
-        Vector3d top4 = new Vector3d(bottom4.x, extensionHeight, bottom4.z);
-
-        List<Vector3d> boundingEdges = Arrays.asList(
-
-                // Bottom
-                bottom1, bottom2,
-                bottom2, bottom3,
-                bottom3, bottom4,
-                bottom4, bottom1,
-
-                // Sides
-                bottom1, top1,
-                bottom2, top2,
-                bottom3, top3,
-                bottom4, top4,
-
-                // Top
-                top1, top2,
-                top2, top3,
-                top3, top4,
-                top4, top1
-        );
-
-        if (direction.getDirectionVec().getX() != 1) {
-
-            boundingEdges = boundingEdges.stream().map(vec3d -> new Vector3d(1.0 - vec3d.x, vec3d.y, vec3d.z)).collect(Collectors.toList());
-        }
-
-        if (direction.getDirectionVec().getZ() != 1) {
-
-            boundingEdges = boundingEdges.stream().map(vec3d -> new Vector3d(vec3d.x, vec3d.y, 1.0 - vec3d.z)).collect(Collectors.toList());
-        }
-
-        return null;
-//        return new NoneVoxelShape(diagonalShape, boundingEdges);
+        return collisionShape;
     }
 
     @SuppressWarnings({"NullableProblems", "deprecation"})
     @Override
     public void updateDiagonalNeighbors(BlockState state, IWorld world, BlockPos pos, int flags, int recursionLeft) {
 
-        BlockPos.Mutable neighborPos = new BlockPos.Mutable();
-        for (EightWayDirection direction : EightWayDirection.getIntercardinalDirections()) {
+        this.updateDiagonalNeighbors(world, pos, flags, recursionLeft);
+    }
 
-            Vector3i directionVec = direction.getDirectionVec();
-            neighborPos.setAndOffset(pos, directionVec.getX(), directionVec.getY(), directionVec.getZ());
-            BlockState neighborState = world.getBlockState(neighborPos);
-            if (neighborState.getBlock() instanceof FenceBlock) {
+    @Inject(method = "updatePostPlacement", at = @At("TAIL"), cancellable = true)
+    public void updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos, CallbackInfoReturnable<BlockState> callbackInfo) {
 
-                BlockState neighborPostUpdateState = neighborState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.getOpposite()), this.canConnect(neighborState));
-                Block.replaceBlockState(neighborState, neighborPostUpdateState, world, neighborPos, flags, recursionLeft);
-            }
-        }
+        this.updatePostPlacement(facing, worldIn, currentPos, callbackInfo);
     }
 
 }
