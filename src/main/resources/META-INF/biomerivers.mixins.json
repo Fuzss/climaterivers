@@ -6,11 +6,14 @@
   "refmap": "biomerivers.refmap.json",
   "mixins": [
     "accessor.IVoxelShapeAccessor",
+    "AbstractFireBlockMixin",
     "FenceBlockMixin",
+    "IForgeBlockMixin",
     "LakeLavaMixin",
     "LakeWaterMixin",
     "LecternBlockMixin",
-    "MixRiverLayerMixin"
+    "MixRiverLayerMixin",
+    "TeleporterMixin"
   ],
   "client": [
   ],
