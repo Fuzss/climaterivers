@@ -67,26 +67,10 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
     public abstract boolean canConnect(BlockState state, boolean isSideSolid, Direction direction);
 
     @Override
-    public boolean canConnectDiagonally(BlockState blockstate, BlockPos pos, IBlockReader iblockreader, EightWayDirection opposite) {
+    public boolean canConnectDiagonally(BlockState blockstate) {
 
         Block block = blockstate.getBlock();
-        if (cannotAttach(block)) {
-
-            return false;
-        } else if (this.isWoodenFence(block)) {
-
-            return true;
-        }
-
-        for (EightWayDirection cardinalDirection : opposite.getCardinals()) {
-
-            if (!blockstate.isSolidSide(iblockreader, pos, cardinalDirection.convert())) {
-
-                return false;
-            }
-        }
-
-        return true;
+        return !cannotAttach(block) && this.isWoodenFence(block);
     }
 
     @Shadow
@@ -120,10 +104,10 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
                 .with(WEST, (connections & 2) != 0)
                 .with(NORTH, (connections & 4) != 0)
                 .with(EAST, (connections & 8) != 0)
-                .with(SOUTH_WEST, this.canConnectDiagonally(states[4], positions[4], iblockreader, EightWayDirection.NORTH_EAST) && (connections & 1) == 0 && (connections & 2) == 0)
-                .with(NORTH_WEST, this.canConnectDiagonally(states[5], positions[5], iblockreader, EightWayDirection.SOUTH_EAST) && (connections & 2) == 0 && (connections & 4) == 0)
-                .with(NORTH_EAST, this.canConnectDiagonally(states[6], positions[6], iblockreader, EightWayDirection.SOUTH_WEST) && (connections & 4) == 0 && (connections & 8) == 0)
-                .with(SOUTH_EAST, this.canConnectDiagonally(states[7], positions[7], iblockreader, EightWayDirection.NORTH_WEST) && (connections & 8) == 0 && (connections & 1) == 0)
+                .with(SOUTH_WEST, this.canConnectDiagonally(states[4]) && (connections & 1) == 0 && (connections & 2) == 0)
+                .with(NORTH_WEST, this.canConnectDiagonally(states[5]) && (connections & 2) == 0 && (connections & 4) == 0)
+                .with(NORTH_EAST, this.canConnectDiagonally(states[6]) && (connections & 4) == 0 && (connections & 8) == 0)
+                .with(SOUTH_EAST, this.canConnectDiagonally(states[7]) && (connections & 8) == 0 && (connections & 1) == 0)
                 .with(WATERLOGGED, fluidstate.getFluid() == Fluids.WATER);
 
         callbackInfo.setReturnValue(stateForPlacement);

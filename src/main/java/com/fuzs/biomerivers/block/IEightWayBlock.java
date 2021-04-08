@@ -11,7 +11,6 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -53,20 +52,24 @@ public interface IEightWayBlock {
         return index;
     }
 
-    boolean canConnectDiagonally(BlockState blockstate, BlockPos pos, IBlockReader iblockreader, EightWayDirection opposite);
+    boolean canConnectDiagonally(BlockState blockstate);
 
     default void updatePostPlacement(Direction facing, IWorld worldIn, BlockPos currentPos, CallbackInfoReturnable<BlockState> callbackInfo) {
 
         if (facing.getAxis().getPlane() == Direction.Plane.HORIZONTAL) {
 
             BlockState returnState = callbackInfo.getReturnValue();
-            EightWayDirection cardinal = EightWayDirection.convert(facing);
-            boolean isBlocked = returnState.get(DIRECTION_TO_PROPERTY_MAP.get(cardinal));
-            for (EightWayDirection direction : cardinal.getIntercardinals()) {
+            for (EightWayDirection direction : EightWayDirection.convert(facing).getIntercardinals()) {
 
                 BlockPos pos = currentPos.add(direction.getDirectionVec());
                 BlockState diagonalState = worldIn.getBlockState(pos);
-                returnState = returnState.with(DIRECTION_TO_PROPERTY_MAP.get(direction), !isBlocked && this.canConnectDiagonally(diagonalState, pos, worldIn, direction.opposite()));
+                boolean isBlocked = false;
+                for (EightWayDirection cardinal : direction.getCardinals()) {
+
+                    isBlocked = isBlocked || returnState.get(DIRECTION_TO_PROPERTY_MAP.get(cardinal));
+                }
+
+                returnState = returnState.with(DIRECTION_TO_PROPERTY_MAP.get(direction), !isBlocked && this.canConnectDiagonally(diagonalState));
             }
 
             callbackInfo.setReturnValue(returnState);
@@ -89,7 +92,7 @@ public interface IEightWayBlock {
                     isBlocked = isBlocked || diagonalState.get(DIRECTION_TO_PROPERTY_MAP.get(cardinal));
                 }
 
-                BlockState diagonalStateUpdated = diagonalState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.opposite()), !isBlocked && this.canConnectDiagonally(world.getBlockState(pos), pos, world, direction));
+                BlockState diagonalStateUpdated = diagonalState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.opposite()), !isBlocked && this.canConnectDiagonally(world.getBlockState(pos)));
                 Block.replaceBlockState(diagonalState, diagonalStateUpdated, world, diagonalPos, flags, recursionLeft);
             }
         }
