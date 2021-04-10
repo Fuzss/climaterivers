@@ -1,15 +1,19 @@
 package com.fuzs.biomerivers.element;
 
 import com.fuzs.biomerivers.BiomeRivers;
-import com.fuzs.biomerivers.client.BlockStateResources;
-import com.fuzs.biomerivers.client.ResourceGenerator;
+import com.fuzs.biomerivers.block.IEightWayBlock;
+import com.fuzs.biomerivers.client.BlockResourceGenerator;
+import com.fuzs.biomerivers.client.BlockResources;
 import com.fuzs.puzzleslib_br.element.AbstractElement;
 import com.fuzs.puzzleslib_br.element.side.IClientElement;
 import com.fuzs.puzzleslib_br.element.side.ICommonElement;
+import com.google.common.collect.Maps;
+import com.google.gson.JsonElement;
 import net.minecraft.block.Block;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.*;
+import net.minecraft.state.Property;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.ModList;
@@ -18,11 +22,10 @@ import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
 import net.minecraftforge.fml.packs.ModFileResourcePack;
 import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DiagonalFencesElement extends AbstractElement implements ICommonElement, IClientElement {
@@ -38,13 +41,19 @@ public class DiagonalFencesElement extends AbstractElement implements ICommonEle
 
         this.addResourcePack();
         ResourceLocation baseModel = new ResourceLocation(BiomeRivers.MODID, "block/fence_diagonal_side");
-        BlockStateResources.getDiagonalModel()
-        Map<ResourceLocation, Block> allFences = ForgeRegistries.BLOCKS.getValues().stream()
+        Set<Block> allFences = ForgeRegistries.BLOCKS.getValues().stream()
                 .filter(block -> block instanceof FenceBlock)
-                .collect(Collectors.toMap(ForgeRegistryEntry::getRegistryName, Function.identity()));
+                .collect(Collectors.toSet());
         IResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+        BlockResourceGenerator generator = new BlockResourceGenerator().addUnits(allFences, resourceManager, baseModel, "side");
+        Property<?>[] properties = IEightWayBlock.DIRECTION_TO_PROPERTY_MAP.values().stream().skip(4).toArray(Property<?>[]::new);
+        Property<?>[] parentProperties = IEightWayBlock.DIRECTION_TO_PROPERTY_MAP.values().stream().limit(4).toArray(Property<?>[]::new);
+        generator.load(properties, parentProperties);
+        Map<ResourceLocation, JsonElement> resources = Maps.newHashMap();
+        resources.put(new ResourceLocation(baseModel.getNamespace(), "model/" + baseModel.getPath() + ".json"), BlockResources.getDiagonalModel());
+        generator.putResources(resources);
+        generator.convertResources(resources);
 
-        ResourceGenerator.getBlockStateReplacements(resourceManager, allFences);
     }
 
     private void addResourcePack() {

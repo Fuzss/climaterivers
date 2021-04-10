@@ -1,6 +1,7 @@
 package com.fuzs.biomerivers.client;
 
 import com.google.common.collect.Maps;
+import net.minecraft.resources.IResourcePack;
 import net.minecraft.resources.ResourcePack;
 import net.minecraft.resources.ResourcePackType;
 import net.minecraft.resources.data.IMetadataSectionSerializer;
@@ -22,32 +23,42 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("NullableProblems")
-public class RuntimeResourcePack extends ResourcePack {
+public class RuntimeResourcePack implements IResourcePack {
 
+    private final String name;
+    private final StringTextComponent description;
+    private boolean locked;
     private final Map<String, byte[]> data = Maps.newHashMap();
-    private final IModInfo modInfo;
-    private final Map<ResourceLocation, String> blockToTextureMap;
+    private final Map<ResourceLocation, String> blockToTextureMap = Maps.newHashMap();
 
-    public RuntimeResourcePack(IModInfo modInfo, Map<ResourceLocation, String> blockToTextureMap) {
+    public RuntimeResourcePack(String name, String description) {
 
-        super(new File(modInfo.getModId()));
-        this.modInfo = modInfo;
-        this.blockToTextureMap = blockToTextureMap;
+        this.name = name;
+        this.description = new StringTextComponent(description);
     }
 
     @Override
-    protected InputStream getInputStream(String resourcePath) throws IOException {
+    public InputStream getRootResourceStream(String fileName) throws IOException {
+
         return null;
     }
 
     @Override
-    protected boolean resourceExists(String resourcePath) {
-        return false;
+    public InputStream getResourceStream(ResourcePackType type, ResourceLocation location) throws IOException {
+
+        return null;
     }
 
     @Override
     public Collection<ResourceLocation> getAllResourceLocations(ResourcePackType type, String namespaceIn, String pathIn, int maxDepthIn, Predicate<String> filterIn) {
+
         return null;
+    }
+
+    @Override
+    public boolean resourceExists(ResourcePackType type, ResourceLocation location) {
+
+        return false;
     }
 
     @Override
@@ -67,25 +78,20 @@ public class RuntimeResourcePack extends ResourcePack {
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public <T> T getMetadata(IMetadataSectionSerializer<T> deserializer) throws IOException {
+    public <T> T getMetadata(IMetadataSectionSerializer<T> deserializer) {
 
         if (deserializer == PackMetadataSection.SERIALIZER) {
 
-            return (T) new PackMetadataSection(new StringTextComponent(this.modInfo.getDescription()), SharedConstants.getVersion().getPackVersion());
+            return (T) new PackMetadataSection(this.description, SharedConstants.getVersion().getPackVersion());
         }
 
-        return super.getMetadata(deserializer);
+        return null;
     }
 
     @Override
     public String getName() {
 
-        return this.modInfo.getModId();
-    }
-
-    private void generate() {
-
-
+        return this.name;
     }
 
 }

@@ -8,7 +8,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.ModelFile;
 
-public class BlockStateResources {
+public class BlockResources {
 
     public static IFinishedBlockState getDiagonalState(Block block, ResourceLocation[] diagonalModels) {
 

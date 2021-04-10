@@ -3,11 +3,12 @@ package com.fuzs.biomerivers.client;
 import com.fuzs.biomerivers.BiomeRivers;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.model.BlockModel;
 import net.minecraft.client.renderer.model.RenderMaterial;
-import net.minecraft.client.renderer.model.Variant;
 import net.minecraft.client.renderer.model.VariantList;
 import net.minecraft.client.renderer.texture.MissingTextureSprite;
 import net.minecraft.data.IFinishedBlockState;
@@ -32,38 +33,38 @@ import java.util.stream.Stream;
 
 public class BlockStateModelUnit {
 
-    private static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(Variant.class, new Variant.Deserializer())
-            .registerTypeAdapter(VariantList.class, new VariantList.Deserializer())
-            .setPrettyPrinting().disableHtmlEscaping().create();
-
     private final Map<ResourceLocation, JsonElement> resources = Maps.newHashMap();
     private final IResourceManager resourceManager;
     private final Block block;
-    private final ResourceLocation location;
+    private final ResourceLocation blockLocation;
+    private final ResourceLocation blockStateFile;
     private final ResourceLocation baseModel;
-    private final String modelType;
+    private final String modelSuffix;
 
-    public BlockStateModelUnit(IResourceManager resourceManager, Block block, ResourceLocation baseModel, String modelType) {
+    @SuppressWarnings("ConstantConditions")
+    public BlockStateModelUnit(Block block, IResourceManager resourceManager, ResourceLocation baseModel, String modelSuffix) {
 
         this.resourceManager = resourceManager;
         this.block = block;
-        this.location = block.getRegistryName();
+        this.blockLocation = block.getRegistryName();
+        this.blockStateFile = new ResourceLocation(this.blockLocation.getNamespace(), "blockstates/" + this.blockLocation.getPath() + ".json");
         this.baseModel = baseModel;
-        this.modelType = modelType;
+        this.modelSuffix = modelSuffix;
     }
 
     public void load(Property<?>[] properties, Property<?>[] parentProperties) {
 
-        ResourceLocation blockStatePath = new ResourceLocation(this.location.getNamespace(), "blockstates/" + this.location.getPath() + ".json");
+        ResourceLocation blockStatePath = this.blockStateFile;
         JsonObject jsonObject = this.getBlockStateResource(blockStatePath);
         if (jsonObject != null && jsonObject.has("multipart")) {
 
             JsonArray multipart = JSONUtils.getJsonArray(jsonObject, "multipart");
             if (this.addVariantModels(multipart, properties, parentProperties)) {
 
-                ResourceLocation[] modelNames = Stream.of(properties).map(property -> this.getModelName(property, false)).toArray(ResourceLocation[]::new);
-                IFinishedBlockState diagonalState = BlockStateResources.getDiagonalState(this.block, modelNames);
+                ResourceLocation[] modelNames = Stream.of(properties)
+                        .map(property -> this.getModelName(property, false))
+                        .toArray(ResourceLocation[]::new);
+                IFinishedBlockState diagonalState = BlockResources.getDiagonalState(this.block, modelNames);
                 JsonObject toBeAdded = diagonalState.get().getAsJsonObject();
                 multipart.addAll(JSONUtils.getJsonArray(toBeAdded, "multipart"));
                 this.resources.put(blockStatePath, multipart);
@@ -71,9 +72,16 @@ public class BlockStateModelUnit {
         }
     }
 
+    public Collection<ResourceLocation> getAllResourceLocations(Property<?>[] properties) {
+
+        return Stream.concat(Stream.of(properties)
+                .map(property -> this.getModelName(property, true)), Stream.of(this.blockStateFile))
+                .collect(Collectors.toSet());
+    }
+
     private JsonObject getBlockStateResource(ResourceLocation blockStatePath) {
 
-        JsonElement stateElement = this.loadResource(blockStatePath, reader -> GSON.fromJson(reader, JsonElement.class));
+        JsonElement stateElement = this.loadResource(blockStatePath, reader -> BlockResourceGenerator.GSON.fromJson(reader, JsonElement.class));
         if (stateElement != null && stateElement.isJsonObject()) {
 
             return stateElement.getAsJsonObject();
@@ -94,7 +102,7 @@ public class BlockStateModelUnit {
             for (int i = 0; i < textures.length; i++) {
 
                 ResourceLocation model = this.getModelName(properties[i], true);
-                this.resources.put(model, BlockStateResources.getVariantModel(this.baseModel, textures[i]));
+                this.resources.put(model, BlockResources.getVariantModel(this.baseModel, textures[i]));
             }
 
             return true;
@@ -106,8 +114,8 @@ public class BlockStateModelUnit {
 
     private ResourceLocation getModelName(Property<?> property, boolean fileName) {
 
-        String name = "block/" + this.location.getPath() + "_" + property.getName() + "_" + this.modelType;
-        return new ResourceLocation(this.location.getNamespace(), fileName ? "models/" + name + ".json" : name);
+        String name = "block/" + this.blockLocation.getPath() + "_" + property.getName() + "_" + this.modelSuffix;
+        return new ResourceLocation(this.blockLocation.getNamespace(), fileName ? "models/" + name + ".json" : name);
     }
 
     private ResourceLocation getPropertyTexture(JsonArray multipartArray, Property<?> property) {
@@ -167,15 +175,9 @@ public class BlockStateModelUnit {
         return null;
     }
 
-    public Map<String, byte[]> getRawResources() {
+    public void putResources(Map<ResourceLocation, JsonElement> resources) {
 
-        return this.resources.entrySet().stream()
-                .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> jsonToBytes(entry.getValue())));
-    }
-
-    private static byte[] jsonToBytes(JsonElement jsonElement) {
-
-        return GSON.toJson(jsonElement).getBytes(StandardCharsets.UTF_8);
+        resources.putAll(this.resources);
     }
 
     private static Optional<ResourceLocation> getPropertyModel(JsonArray multipartArray, Property<?> property) {
@@ -192,7 +194,7 @@ public class BlockStateModelUnit {
                     if (conditionObject.has(name) && JSONUtils.getBoolean(conditionObject, name)) {
 
                         // apply must be present if we've come this far
-                        VariantList variants = GSON.fromJson(multipartObject.get("apply"), VariantList.class);
+                        VariantList variants = BlockResourceGenerator.GSON.fromJson(multipartObject.get("apply"), VariantList.class);
                         if (!variants.getDependencies().isEmpty()) {
 
                             return variants.getDependencies().stream().findAny();
