@@ -1,6 +1,7 @@
 package com.fuzs.biomerivers.client;
 
 import com.fuzs.biomerivers.BiomeRivers;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
@@ -28,18 +29,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class BlockStateModelUnit {
 
-    private final Map<ResourceLocation, JsonElement> resources = Maps.newHashMap();
     private final IResourceManager resourceManager;
     private final Block block;
     private final ResourceLocation blockLocation;
     private final ResourceLocation blockStateFile;
     private final ResourceLocation baseModel;
     private final String modelSuffix;
+    private final Map<ResourceLocation, JsonElement> resources = Maps.newHashMap();
 
     @SuppressWarnings("ConstantConditions")
     public BlockStateModelUnit(Block block, IResourceManager resourceManager, ResourceLocation baseModel, String modelSuffix) {
@@ -52,36 +52,41 @@ public class BlockStateModelUnit {
         this.modelSuffix = modelSuffix;
     }
 
-    public void load(Property<?>[] properties, Property<?>[] parentProperties) {
+    public Map<ResourceLocation, JsonElement> load(Property<?>[] properties, Property<?>[] parentProperties) {
 
-        ResourceLocation blockStatePath = this.blockStateFile;
-        JsonObject jsonObject = this.getBlockStateResource(blockStatePath);
+        this.resources.clear();
+        JsonObject jsonObject = this.getBlockStateResource();
         if (jsonObject != null && jsonObject.has("multipart")) {
 
             JsonArray multipart = JSONUtils.getJsonArray(jsonObject, "multipart");
             if (this.addVariantModels(multipart, properties, parentProperties)) {
 
-                ResourceLocation[] modelNames = Stream.of(properties)
-                        .map(property -> this.getModelName(property, false))
-                        .toArray(ResourceLocation[]::new);
-                IFinishedBlockState diagonalState = BlockResources.getDiagonalState(this.block, modelNames);
-                JsonObject toBeAdded = diagonalState.get().getAsJsonObject();
-                multipart.addAll(JSONUtils.getJsonArray(toBeAdded, "multipart"));
-                this.resources.put(blockStatePath, multipart);
+                this.addBlockStates(properties, multipart);
+                this.resources.put(this.blockStateFile, jsonObject);
             }
         }
+
+        return ImmutableMap.copyOf(this.resources);
     }
 
-    public Collection<ResourceLocation> getAllResourceLocations(Property<?>[] properties) {
+    private void addBlockStates(Property<?>[] properties, JsonArray multipart) {
 
-        return Stream.concat(Stream.of(properties)
-                .map(property -> this.getModelName(property, true)), Stream.of(this.blockStateFile))
-                .collect(Collectors.toSet());
+        ResourceLocation[] modelNames = Stream.of(properties)
+                .map(property -> this.getModelName(property, false))
+                .toArray(ResourceLocation[]::new);
+        IFinishedBlockState diagonalState = BlockResources.getDiagonalState(this.block, modelNames);
+        JsonObject toBeAdded = diagonalState.get().getAsJsonObject();
+        multipart.addAll(JSONUtils.getJsonArray(toBeAdded, "multipart"));
     }
 
-    private JsonObject getBlockStateResource(ResourceLocation blockStatePath) {
+    public ResourceLocation getResourceLocation() {
 
-        JsonElement stateElement = this.loadResource(blockStatePath, reader -> BlockResourceGenerator.GSON.fromJson(reader, JsonElement.class));
+        return this.blockStateFile;
+    }
+
+    private JsonObject getBlockStateResource() {
+
+        JsonElement stateElement = this.loadResource(this.blockStateFile, reader -> BlockResourceGenerator.GSON.fromJson(reader, JsonElement.class));
         if (stateElement != null && stateElement.isJsonObject()) {
 
             return stateElement.getAsJsonObject();
@@ -173,11 +178,6 @@ public class BlockStateModelUnit {
         }
 
         return null;
-    }
-
-    public void putResources(Map<ResourceLocation, JsonElement> resources) {
-
-        resources.putAll(this.resources);
     }
 
     private static Optional<ResourceLocation> getPropertyModel(JsonArray multipartArray, Property<?> property) {

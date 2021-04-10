@@ -1,78 +1,104 @@
 package com.fuzs.biomerivers.client;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import net.minecraft.resources.IResourcePack;
-import net.minecraft.resources.ResourcePack;
 import net.minecraft.resources.ResourcePackType;
 import net.minecraft.resources.data.IMetadataSectionSerializer;
 import net.minecraft.resources.data.PackMetadataSection;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SharedConstants;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.forgespi.language.IModInfo;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings("NullableProblems")
 public class RuntimeResourcePack implements IResourcePack {
 
+    private final Map<ResourceLocation, byte[]> resources = Maps.newHashMap();
+    private final BlockResourceGenerator generator;
     private final String name;
     private final StringTextComponent description;
     private boolean locked;
-    private final Map<String, byte[]> data = Maps.newHashMap();
-    private final Map<ResourceLocation, String> blockToTextureMap = Maps.newHashMap();
 
-    public RuntimeResourcePack(String name, String description) {
+    public RuntimeResourcePack(BlockResourceGenerator generator, String name, String description) {
 
+        this.generator = generator;
         this.name = name;
         this.description = new StringTextComponent(description);
     }
 
     @Override
-    public InputStream getRootResourceStream(String fileName) throws IOException {
+    public InputStream getRootResourceStream(String fileName) {
 
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public InputStream getResourceStream(ResourcePackType type, ResourceLocation location) throws IOException {
+    public InputStream getResourceStream(ResourcePackType type, ResourceLocation location) {
 
-        return null;
+        byte[] data = this.resources.get(location);
+        if (data == null) {
+
+            this.locked = true;
+            Map<ResourceLocation, byte[]> unitResources = this.generator.getResource(location);
+            data = unitResources.get(location);
+            unitResources.forEach(this.resources::put);
+            this.locked = false;
+        }
+
+        return new ByteArrayInputStream(data);
     }
 
     @Override
     public Collection<ResourceLocation> getAllResourceLocations(ResourcePackType type, String namespaceIn, String pathIn, int maxDepthIn, Predicate<String> filterIn) {
 
-        return null;
+        if (!this.locked && type == ResourcePackType.CLIENT_RESOURCES) {
+
+            int currentDepth = StringUtils.countMatches(pathIn, "/");
+            return this.getAllResourceLocations().stream()
+                    .filter(location -> location.getNamespace().equals(namespaceIn))
+                    .filter(location -> location.getPath().startsWith(pathIn))
+                    .filter(location -> filterIn.test(location.getPath()))
+                    .filter(location -> StringUtils.countMatches(location.getPath(), "/") - currentDepth <= maxDepthIn)
+                    .collect(Collectors.toSet());
+        }
+
+        return Sets.newHashSet();
     }
 
     @Override
     public boolean resourceExists(ResourcePackType type, ResourceLocation location) {
 
-        return false;
+        return !this.locked && type == ResourcePackType.CLIENT_RESOURCES && this.getAllResourceLocations().contains(location);
     }
 
     @Override
     public Set<String> getResourceNamespaces(ResourcePackType type) {
 
-        return this.blockToTextureMap.keySet().stream()
-                .map(ResourceLocation::getNamespace)
-                .collect(Collectors.toSet());
+        if (!this.locked && type == ResourcePackType.CLIENT_RESOURCES) {
+
+            return this.getAllResourceLocations().stream()
+                    .map(ResourceLocation::getNamespace)
+                    .collect(Collectors.toSet());
+        }
+
+        return Sets.newHashSet();
     }
 
     @Override
     public void close() {
 
-        this.data.clear();
+        this.resources.clear();
     }
 
     @SuppressWarnings("unchecked")
@@ -92,6 +118,17 @@ public class RuntimeResourcePack implements IResourcePack {
     public String getName() {
 
         return this.name;
+    }
+
+    public StringTextComponent getDescription() {
+
+        return this.description;
+    }
+
+    private Collection<ResourceLocation> getAllResourceLocations() {
+
+        return Stream.concat(this.resources.keySet().stream(), this.generator.getResourceLocations().stream())
+                .collect(Collectors.toSet());
     }
 
 }
