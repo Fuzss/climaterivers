@@ -22,13 +22,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("NullableProblems")
-public class DynamicResourcePack extends ResourcePack {
+public class RuntimeResourcePack extends ResourcePack {
 
     private final Map<String, byte[]> data = Maps.newHashMap();
     private final IModInfo modInfo;
     private final Map<ResourceLocation, String> blockToTextureMap;
 
-    public DynamicResourcePack(IModInfo modInfo, Map<ResourceLocation, String> blockToTextureMap) {
+    public RuntimeResourcePack(IModInfo modInfo, Map<ResourceLocation, String> blockToTextureMap) {
 
         super(new File(modInfo.getModId()));
         this.modInfo = modInfo;

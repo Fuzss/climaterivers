@@ -25,4 +25,5 @@ public class ByeByeLakesElement extends AbstractElement implements ICommonElemen
         builder.define("Remove All Water Lakes", false).comment("Remove all water lakes from the world.").sync(v -> this.noWaterLakes = v);
         builder.define("Remove All Lava Lakes", false).comment("Remove all lava lakes from the world.").sync(v -> this.noLavaLakes = v);
     }
+
 }

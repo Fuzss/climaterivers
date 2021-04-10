@@ -41,7 +41,7 @@ public class JsonConfigFileUtil {
      */
     public static boolean mkdirs(File dir) {
 
-        if (!dir.exists()) {
+        if (dir != null && !dir.exists()) {
 
             return dir.mkdirs();
         }
