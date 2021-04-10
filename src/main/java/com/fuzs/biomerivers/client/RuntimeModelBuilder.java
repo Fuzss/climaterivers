@@ -2,13 +2,17 @@ package com.fuzs.biomerivers.client;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.CustomLoaderBuilder;
+import net.minecraftforge.client.model.generators.ModelBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 import java.util.function.BiFunction;
 
-public class RuntimeModelBuilder extends BlockModelBuilder {
+/**
+ * model builder without the need for {@link net.minecraftforge.common.data.ExistingFileHelper}
+ * so it can be used independent of {@link net.minecraftforge.fml.event.lifecycle.GatherDataEvent}
+ */
+public class RuntimeModelBuilder extends ModelBuilder<RuntimeModelBuilder> {
 
     public RuntimeModelBuilder(ResourceLocation outputLocation) {
 
@@ -26,7 +30,7 @@ public class RuntimeModelBuilder extends BlockModelBuilder {
     }
 
     @Override
-    public <L extends CustomLoaderBuilder<BlockModelBuilder>> L customLoader(BiFunction<BlockModelBuilder, ExistingFileHelper, L> customLoaderFactory) {
+    public <L extends CustomLoaderBuilder<RuntimeModelBuilder>> L customLoader(BiFunction<RuntimeModelBuilder, ExistingFileHelper, L> customLoaderFactory) {
 
         throw new UnsupportedOperationException();
     }

@@ -1,22 +1,14 @@
 package com.fuzs.biomerivers.element;
 
 import com.fuzs.biomerivers.BiomeRivers;
-import com.fuzs.biomerivers.block.IEightWayBlock;
-import com.fuzs.puzzleslib_br.config.json.JsonConfigFileUtil;
+import com.fuzs.biomerivers.client.ResourceGenerator;
 import com.fuzs.puzzleslib_br.element.AbstractElement;
 import com.fuzs.puzzleslib_br.element.side.IClientElement;
 import com.fuzs.puzzleslib_br.element.side.ICommonElement;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import net.minecraft.block.Block;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.client.Minecraft;
-import net.minecraft.data.*;
 import net.minecraft.resources.*;
-import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.ModList;
@@ -27,11 +19,6 @@ import net.minecraftforge.forgespi.language.IModInfo;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -49,50 +36,10 @@ public class DiagonalFencesElement extends AbstractElement implements ICommonEle
     public void loadClient() {
 
         this.addResourcePack();
-//        Map<ResourceLocation, Block> allFenceLocations = ForgeRegistries.BLOCKS.getValues().stream()
-//                .filter(block -> block instanceof FenceBlock)
-//                .collect(Collectors.toMap(ForgeRegistryEntry::getRegistryName, Function.identity()));
-//        this.add(Minecraft.getInstance().getResourceManager(), allFenceLocations);
-    }
-
-    private void add(IResourceManager resourceManager, Map<ResourceLocation, Block> allFenceLocations) {
-
-        for (Map.Entry<ResourceLocation, Block> entry : allFenceLocations.entrySet()) {
-
-            ResourceLocation fenceLocation = entry.getKey();
-            ResourceLocation jsonPath = this.constructPath(fenceLocation);
-            try (InputStream inputstream = resourceManager.getResource(jsonPath).getInputStream()) {
-
-                InputStreamReader reader = new InputStreamReader(inputstream, StandardCharsets.UTF_8);
-                JsonElement stateElement = JsonConfigFileUtil.GSON.fromJson(reader, JsonElement.class);
-                if (stateElement.isJsonObject()) {
-
-                    JsonObject jsonObject = stateElement.getAsJsonObject();
-                    JsonArray multipart = JSONUtils.getJsonArray(jsonObject, "multipart");
-                    IFinishedBlockState diagonalState = createExtraFenceState(entry.getValue(), new ResourceLocation(fenceLocation.getNamespace(), "block/" + fenceLocation.getPath() + "_diagonal_side"));
-                    JsonObject diagonalStateJsonObject = diagonalState.get().getAsJsonObject();
-                    multipart.addAll(JSONUtils.getJsonArray(diagonalStateJsonObject, "multipart"));
-                    byte[] bytes = JsonConfigFileUtil.GSON.toJson(stateElement).getBytes(StandardCharsets.UTF_8);
-                }
-            } catch (IOException e) {
-
-                BiomeRivers.LOGGER.warn("Exception loading blockstate definition: {}: {}", fenceLocation, e);
-            }
-        }
-    }
-
-    private static IFinishedBlockState createExtraFenceState(Block block, ResourceLocation diagonalSide) {
-
-        return FinishedMultiPartBlockState.func_240106_a_(block)
-                .func_240108_a_(IMultiPartPredicateBuilder.func_240089_a_().func_240098_a_(IEightWayBlock.NORTH_EAST, true), BlockModelDefinition.getNewModelDefinition().replaceInfoValue(BlockModelFields.field_240202_c_, diagonalSide).replaceInfoValue(BlockModelFields.field_240203_d_, true))
-                .func_240108_a_(IMultiPartPredicateBuilder.func_240089_a_().func_240098_a_(IEightWayBlock.SOUTH_EAST, true), BlockModelDefinition.getNewModelDefinition().replaceInfoValue(BlockModelFields.field_240202_c_, diagonalSide).replaceInfoValue(BlockModelFields.field_240201_b_, BlockModelFields.Rotation.R90).replaceInfoValue(BlockModelFields.field_240203_d_, true))
-                .func_240108_a_(IMultiPartPredicateBuilder.func_240089_a_().func_240098_a_(IEightWayBlock.SOUTH_WEST, true), BlockModelDefinition.getNewModelDefinition().replaceInfoValue(BlockModelFields.field_240202_c_, diagonalSide).replaceInfoValue(BlockModelFields.field_240201_b_, BlockModelFields.Rotation.R180).replaceInfoValue(BlockModelFields.field_240203_d_, true))
-                .func_240108_a_(IMultiPartPredicateBuilder.func_240089_a_().func_240098_a_(IEightWayBlock.NORTH_WEST, true), BlockModelDefinition.getNewModelDefinition().replaceInfoValue(BlockModelFields.field_240202_c_, diagonalSide).replaceInfoValue(BlockModelFields.field_240201_b_, BlockModelFields.Rotation.R270).replaceInfoValue(BlockModelFields.field_240203_d_, true));
-    }
-
-    private ResourceLocation constructPath(ResourceLocation blockstateLocation) {
-
-        return new ResourceLocation(blockstateLocation.getNamespace(), "blockstates/" + blockstateLocation.getPath() + ".json");
+        Map<ResourceLocation, Block> allFenceLocations = ForgeRegistries.BLOCKS.getValues().stream()
+                .filter(block -> block instanceof FenceBlock)
+                .collect(Collectors.toMap(ForgeRegistryEntry::getRegistryName, Function.identity()));
+        ResourceGenerator.getBlockStateReplacements(Minecraft.getInstance().getResourceManager(), allFenceLocations);
     }
 
     private void addResourcePack() {

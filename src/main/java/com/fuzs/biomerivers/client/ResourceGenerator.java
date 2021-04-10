@@ -1,13 +1,28 @@
 package com.fuzs.biomerivers.client;
 
+import com.fuzs.biomerivers.BiomeRivers;
+import com.fuzs.puzzleslib_br.config.json.JsonConfigFileUtil;
+import com.google.common.collect.Sets;
 import com.google.gson.*;
+import net.minecraft.block.Block;
+import net.minecraft.client.renderer.model.BlockModel;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.model.Variant;
 import net.minecraft.client.renderer.model.VariantList;
+import net.minecraft.client.renderer.texture.MissingTextureSprite;
+import net.minecraft.data.IFinishedBlockState;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.state.Property;
-import net.minecraft.util.Direction;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -15,6 +30,96 @@ import java.util.stream.Stream;
 public class ResourceGenerator {
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Variant.class, new Variant.Deserializer()).registerTypeAdapter(VariantList.class, new VariantList.Deserializer()).create();
+
+    public static void getBlockStateReplacements(IResourceManager resourceManager, Map<ResourceLocation, Block> allBlockLocations) {
+
+        for (Map.Entry<ResourceLocation, Block> entry : allBlockLocations.entrySet()) {
+
+            ResourceLocation location = entry.getKey();
+
+            ResourceLocation jsonPath = new ResourceLocation(location.getNamespace(), "blockstates/" + location.getPath() + ".json");
+            JsonElement stateElement = getElementAtPath(resourceManager, jsonPath, location);
+            if (stateElement != null && stateElement.isJsonObject()) {
+
+                JsonObject jsonObject = stateElement.getAsJsonObject();
+
+                JsonArray mainMultipart = JSONUtils.getJsonArray(jsonObject, "multipart");
+                IFinishedBlockState diagonalState = BlockStateResources.getDiagonalState(entry.getValue(), new ResourceLocation(location.getNamespace(), "block/" + location.getPath() + "_diagonal_side"));
+                JsonObject additionalMultipart = diagonalState.get().getAsJsonObject();
+                mainMultipart.addAll(JSONUtils.getJsonArray(additionalMultipart, "multipart"));
+                byte[] bytes = ResourceGenerator.jsonToBytes(stateElement);
+            }
+        }
+    }
+
+    private static JsonElement getElementAtPath(IResourceManager resourceManager, ResourceLocation jsonPath, ResourceLocation location) {
+
+        try (InputStream inputstream = resourceManager.getResource(jsonPath).getInputStream()) {
+
+            InputStreamReader reader = new InputStreamReader(inputstream, StandardCharsets.UTF_8);
+            return JsonConfigFileUtil.GSON.fromJson(reader, JsonElement.class);
+        } catch (IOException e) {
+
+            BiomeRivers.LOGGER.warn("Exception loading blockstate definition: {}: {}", location, e);
+        }
+
+        return null;
+    }
+
+    public static ResourceLocation[] getPropertyTextures(IResourceManager resourceManager, JsonArray multipartArray, Property<?>[] properties) {
+
+        ResourceLocation[] propertyModels = getPropertyModels(multipartArray, properties);
+        ResourceLocation[] propertyTextures = new ResourceLocation[propertyModels.length];
+        for (int i = 0; i < propertyModels.length; i++) {
+            
+            propertyTextures[i] = getModelTexture(resourceManager, propertyModels[i]);
+        }
+
+        return propertyTextures;
+    }
+
+    private static ResourceLocation getModelTexture(IResourceManager resourceManager, ResourceLocation location) {
+
+        BlockModel blockModel = loadModel(resourceManager, location);
+        ResourceLocation texture = MissingTextureSprite.getLocation();
+        if (blockModel != null) {
+
+            texture = blockModel.resolveTextureName("texture").getTextureLocation();
+            if (MissingTextureSprite.getLocation().equals(texture)) {
+
+                // get any other texture if none was found for 'texture'
+                Collection<RenderMaterial> allTextures = blockModel.getTextures(modelLocation -> loadModel(resourceManager, modelLocation), Sets.newHashSet());
+                Optional<ResourceLocation> otherTexture = allTextures.stream()
+                        .map(RenderMaterial::getTextureLocation)
+                        .filter(material -> !MissingTextureSprite.getLocation().equals(material))
+                        .findAny();
+                if (otherTexture.isPresent()) {
+
+                    texture = otherTexture.get();
+                }
+            }
+        }
+
+        return texture;
+    }
+
+    private static BlockModel loadModel(IResourceManager resourceManager, ResourceLocation location) {
+
+        ResourceLocation jsonPath = new ResourceLocation(location.getNamespace(), "models/" + location.getPath() + ".json");
+        try (InputStream inputstream = resourceManager.getResource(jsonPath).getInputStream()) {
+
+            Reader reader = new InputStreamReader(inputstream, StandardCharsets.UTF_8);
+            BlockModel blockmodel = BlockModel.deserialize(reader);
+            blockmodel.name = location.toString();
+
+            return blockmodel;
+        } catch (IOException e) {
+
+            BiomeRivers.LOGGER.warn("Exception loading block model definition: {}: {}", location, e);
+        }
+
+        return null;
+    }
 
     private static ResourceLocation[] getPropertyModels(JsonArray multipartArray, Property<?>[] properties) {
 
@@ -71,27 +176,9 @@ public class ResourceGenerator {
                 .toArray(ResourceLocation[]::new);
     }
 
-    public static JsonElement getDiagonalFenceModel(ResourceLocation modelLocation) {
+    public static byte[] jsonToBytes(JsonElement jsonElement) {
 
-        return new RuntimeModelBuilder(modelLocation)
-                .texture("particle", "#texture")
-                .element().from(15, 12, 0).to(17, 15, 10)
-                .rotation().origin(16, 8, 0).axis(Direction.Axis.Y).angle(-45).end()
-                .face(Direction.DOWN).uvs(7, 0, 9, 10).texture("#texture").end()
-                .face(Direction.UP).uvs(7, 0, 9, 10).texture("#texture").end()
-                .face(Direction.NORTH).uvs(7, 1, 9, 4).texture("#texture").end()
-                .face(Direction.WEST).uvs(0, 1, 10, 4).texture("#texture").end()
-                .face(Direction.EAST).uvs(0, 1, 10, 4).texture("#texture").end()
-                .end()
-                .element().from(15, 6, 0).to(17, 9, 10)
-                .rotation().origin(16, 8, 0).axis(Direction.Axis.Y).angle(-45).end()
-                .face(Direction.DOWN).uvs(7, 0, 9, 10).texture("#texture").end()
-                .face(Direction.UP).uvs(7, 0, 9, 10).texture("#texture").end()
-                .face(Direction.NORTH).uvs(7, 7, 9, 10).texture("#texture").end()
-                .face(Direction.WEST).uvs(0, 7, 10, 10).texture("#texture").end()
-                .face(Direction.EAST).uvs(0, 7, 10, 10).texture("#texture").end()
-                .end()
-                .toJson();
+        return JsonConfigFileUtil.GSON.toJson(jsonElement).getBytes(StandardCharsets.UTF_8);
     }
 
 }
