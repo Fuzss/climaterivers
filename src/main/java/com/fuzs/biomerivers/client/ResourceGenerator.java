@@ -21,10 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.sql.ResultSet;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class ResourceGenerator {
@@ -36,7 +34,6 @@ public class ResourceGenerator {
         for (Map.Entry<ResourceLocation, Block> entry : allBlockLocations.entrySet()) {
 
             ResourceLocation location = entry.getKey();
-
             ResourceLocation jsonPath = new ResourceLocation(location.getNamespace(), "blockstates/" + location.getPath() + ".json");
             JsonElement stateElement = getElementAtPath(resourceManager, jsonPath, location);
             if (stateElement != null && stateElement.isJsonObject()) {
@@ -44,7 +41,8 @@ public class ResourceGenerator {
                 JsonObject jsonObject = stateElement.getAsJsonObject();
 
                 JsonArray mainMultipart = JSONUtils.getJsonArray(jsonObject, "multipart");
-                IFinishedBlockState diagonalState = BlockStateResources.getDiagonalState(entry.getValue(), new ResourceLocation(location.getNamespace(), "block/" + location.getPath() + "_diagonal_side"));
+                ResourceLocation blockPath = new ResourceLocation(location.getNamespace(), "block/" + location.getPath() + "_diagonal_side");
+                IFinishedBlockState diagonalState = BlockStateResources.getDiagonalState(entry.getValue(), new ResourceLocation[]{blockPath});
                 JsonObject additionalMultipart = diagonalState.get().getAsJsonObject();
                 mainMultipart.addAll(JSONUtils.getJsonArray(additionalMultipart, "multipart"));
                 byte[] bytes = ResourceGenerator.jsonToBytes(stateElement);
@@ -66,12 +64,24 @@ public class ResourceGenerator {
         return null;
     }
 
+    public static JsonElement[] getVariantModels(IResourceManager resourceManager, ResourceLocation parent, Property<?>[] properties, JsonArray multipartArray, Property<?>[] parentProperties) {
+
+        ResourceLocation[] textures = getPropertyTextures(resourceManager, multipartArray, parentProperties);
+        JsonElement[] models = new JsonElement[textures.length];
+        for (int i = 0; i < textures.length; i++) {
+
+            models[i] = BlockStateResources.getVariantModel(parent, textures[i]);
+        }
+
+        return models;
+    }
+
     public static ResourceLocation[] getPropertyTextures(IResourceManager resourceManager, JsonArray multipartArray, Property<?>[] properties) {
 
         ResourceLocation[] propertyModels = getPropertyModels(multipartArray, properties);
         ResourceLocation[] propertyTextures = new ResourceLocation[propertyModels.length];
         for (int i = 0; i < propertyModels.length; i++) {
-            
+
             propertyTextures[i] = getModelTexture(resourceManager, propertyModels[i]);
         }
 

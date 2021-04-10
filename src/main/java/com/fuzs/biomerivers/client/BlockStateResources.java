@@ -19,17 +19,17 @@ public class BlockStateResources {
                 .func_240108_a_(IMultiPartPredicateBuilder.func_240089_a_().func_240098_a_(IEightWayBlock.NORTH_WEST, true), BlockModelDefinition.getNewModelDefinition().replaceInfoValue(BlockModelFields.field_240202_c_, diagonalModels[3]).replaceInfoValue(BlockModelFields.field_240201_b_, BlockModelFields.Rotation.R270).replaceInfoValue(BlockModelFields.field_240203_d_, true));
     }
 
-    public static JsonElement getVariantModel(ResourceLocation modelLocation, ResourceLocation parent, ResourceLocation texture) {
+    public static JsonElement getVariantModel(ResourceLocation parent, ResourceLocation texture) {
 
-        return new RuntimeModelBuilder(modelLocation)
+        return new RuntimeModelBuilder()
                 .parent(new ModelFile.UncheckedModelFile(parent))
                 .texture("texture", texture)
                 .toJson();
     }
 
-    public static JsonElement getDiagonalModel(ResourceLocation modelLocation) {
+    public static JsonElement getDiagonalModel() {
 
-        return new RuntimeModelBuilder(modelLocation)
+        return new RuntimeModelBuilder()
                 .texture("particle", "#texture")
                 .element()
                 .from(15, 12, 0)

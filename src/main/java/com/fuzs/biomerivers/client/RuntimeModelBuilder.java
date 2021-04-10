@@ -14,9 +14,21 @@ import java.util.function.BiFunction;
  */
 public class RuntimeModelBuilder extends ModelBuilder<RuntimeModelBuilder> {
 
-    public RuntimeModelBuilder(ResourceLocation outputLocation) {
+    public RuntimeModelBuilder() {
 
-        super(outputLocation, null);
+        super(new ResourceLocation("empty"), null);
+    }
+
+    @Override
+    public ResourceLocation getLocation() {
+
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ResourceLocation getUncheckedLocation() {
+
+        throw new UnsupportedOperationException();
     }
 
     @Override

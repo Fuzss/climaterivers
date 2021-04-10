@@ -1,6 +1,7 @@
 package com.fuzs.biomerivers.element;
 
 import com.fuzs.biomerivers.BiomeRivers;
+import com.fuzs.biomerivers.client.BlockStateResources;
 import com.fuzs.biomerivers.client.ResourceGenerator;
 import com.fuzs.puzzleslib_br.element.AbstractElement;
 import com.fuzs.puzzleslib_br.element.side.IClientElement;
@@ -36,10 +37,14 @@ public class DiagonalFencesElement extends AbstractElement implements ICommonEle
     public void loadClient() {
 
         this.addResourcePack();
-        Map<ResourceLocation, Block> allFenceLocations = ForgeRegistries.BLOCKS.getValues().stream()
+        ResourceLocation baseModel = new ResourceLocation(BiomeRivers.MODID, "block/fence_diagonal_side");
+        BlockStateResources.getDiagonalModel()
+        Map<ResourceLocation, Block> allFences = ForgeRegistries.BLOCKS.getValues().stream()
                 .filter(block -> block instanceof FenceBlock)
                 .collect(Collectors.toMap(ForgeRegistryEntry::getRegistryName, Function.identity()));
-        ResourceGenerator.getBlockStateReplacements(Minecraft.getInstance().getResourceManager(), allFenceLocations);
+        IResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+
+        ResourceGenerator.getBlockStateReplacements(resourceManager, allFences);
     }
 
     private void addResourcePack() {
