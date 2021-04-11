@@ -1,6 +1,7 @@
-package com.fuzs.biomerivers.client;
+package com.fuzs.biomerivers.data;
 
 import com.fuzs.biomerivers.block.IEightWayBlock;
+import com.fuzs.biomerivers.client.renderer.model.RuntimeModelBuilder;
 import com.google.gson.JsonElement;
 import net.minecraft.block.Block;
 import net.minecraft.data.*;
@@ -8,7 +9,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.ModelFile;
 
-public class BlockResources {
+public class BlockAssetProvider {
 
     public static IFinishedBlockState getDiagonalState(Block block, ResourceLocation[] diagonalModels) {
 

@@ -1,6 +1,6 @@
 package com.fuzs.biomerivers.mixin;
 
-import com.fuzs.biomerivers.block.EightWayDirection;
+import com.fuzs.biomerivers.util.EightWayDirection;
 import com.fuzs.biomerivers.block.IEightWayBlock;
 import com.fuzs.biomerivers.util.shape.NoneVoxelShape;
 import com.fuzs.biomerivers.util.shape.VoxelCollection;

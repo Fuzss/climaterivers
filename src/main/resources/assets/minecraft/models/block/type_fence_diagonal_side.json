@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/fence_diagonal_side",
-  "textures": {
-    "texture": "minecraft:block/%texture%"
-  }
-}

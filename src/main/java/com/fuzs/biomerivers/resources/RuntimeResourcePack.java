@@ -1,9 +1,8 @@
-package com.fuzs.biomerivers.client;
+package com.fuzs.biomerivers.resources;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.minecraft.resources.IResourcePack;
-import net.minecraft.resources.ResourcePackType;
+import net.minecraft.resources.*;
 import net.minecraft.resources.data.IMetadataSectionSerializer;
 import net.minecraft.resources.data.PackMetadataSection;
 import net.minecraft.util.ResourceLocation;
@@ -22,15 +21,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("NullableProblems")
-public class RuntimeResourcePack implements IResourcePack {
+public class RuntimeResourcePack implements IResourcePack, IResourceInfoFactory {
 
     private final Map<ResourceLocation, byte[]> resources = Maps.newHashMap();
-    private final BlockResourceGenerator generator;
+    private final IResourceGenerator generator;
     private final String name;
     private final StringTextComponent description;
     private boolean locked;
 
-    public RuntimeResourcePack(BlockResourceGenerator generator, String name, String description) {
+    public RuntimeResourcePack(IResourceGenerator generator, String name, String description) {
 
         this.generator = generator;
         this.name = name;
@@ -40,11 +39,17 @@ public class RuntimeResourcePack implements IResourcePack {
     @Override
     public InputStream getRootResourceStream(String fileName) {
 
+        // only used by pack.png really and this pack is hidden anyways
         throw new UnsupportedOperationException();
     }
 
     @Override
     public InputStream getResourceStream(ResourcePackType type, ResourceLocation location) {
+
+        return new ByteArrayInputStream(this.getData(location));
+    }
+
+    private byte[] getData(ResourceLocation location) {
 
         byte[] data = this.resources.get(location);
         if (data == null) {
@@ -56,7 +61,7 @@ public class RuntimeResourcePack implements IResourcePack {
             this.locked = false;
         }
 
-        return new ByteArrayInputStream(data);
+        return data;
     }
 
     @Override
@@ -120,9 +125,17 @@ public class RuntimeResourcePack implements IResourcePack {
         return this.name;
     }
 
+    @Override
     public StringTextComponent getDescription() {
 
         return this.description;
+    }
+
+    @Override
+    public ResourcePackInfo createResourcePack(String owner, boolean alwaysEnabled, ResourcePackInfo.Priority priority, boolean orderLocked, boolean hidden) {
+
+        return new ResourcePackInfo(owner, alwaysEnabled, () -> this, new StringTextComponent(this.getName()),
+                this.getDescription(), PackCompatibility.COMPATIBLE, priority, orderLocked, IPackNameDecorator.BUILTIN, hidden);
     }
 
     private Collection<ResourceLocation> getAllResourceLocations() {

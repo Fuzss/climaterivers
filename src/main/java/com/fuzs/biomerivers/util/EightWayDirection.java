@@ -1,4 +1,4 @@
-package com.fuzs.biomerivers.block;
+package com.fuzs.biomerivers.util;
 
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Vector3i;

@@ -1,4 +1,4 @@
-package com.fuzs.biomerivers.client;
+package com.fuzs.biomerivers.client.renderer.model;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.util.ResourceLocation;

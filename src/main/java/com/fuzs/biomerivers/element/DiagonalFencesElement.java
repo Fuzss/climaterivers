@@ -2,25 +2,33 @@ package com.fuzs.biomerivers.element;
 
 import com.fuzs.biomerivers.BiomeRivers;
 import com.fuzs.biomerivers.block.IEightWayBlock;
-import com.fuzs.biomerivers.client.BlockResourceGenerator;
-import com.fuzs.biomerivers.client.BlockResources;
-import com.fuzs.biomerivers.client.RuntimeResourcePack;
+import com.fuzs.biomerivers.client.renderer.model.AssetLocations;
+import com.fuzs.biomerivers.client.renderer.model.BlockAssetGenerator;
+import com.fuzs.biomerivers.client.renderer.model.BlockStateModelUnit;
+import com.fuzs.biomerivers.data.BlockAssetProvider;
+import com.fuzs.biomerivers.resources.IResourceInfoFactory;
+import com.fuzs.biomerivers.resources.RuntimeResourcePack;
 import com.fuzs.puzzleslib_br.element.AbstractElement;
 import com.fuzs.puzzleslib_br.element.side.IClientElement;
 import com.fuzs.puzzleslib_br.element.side.ICommonElement;
 import net.minecraft.block.Block;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.*;
+import net.minecraft.resources.IResourceManager;
+import net.minecraft.resources.ResourcePackInfo;
+import net.minecraft.resources.ResourcePackList;
 import net.minecraft.state.Property;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DiagonalFencesElement extends AbstractElement implements ICommonElement, IClientElement {
+
+    private BlockAssetGenerator generator;
 
     @Override
     public String[] getDescription() {
@@ -31,41 +39,54 @@ public class DiagonalFencesElement extends AbstractElement implements ICommonEle
     @Override
     public void setupClient() {
 
+        // we just need an event which is called before ResourceManager is loaded for the first time
+        // (which is during construction of Minecraft.class), but after registries have been populated
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onParticleFactoryRegister);
 
         Minecraft mc = Minecraft.getInstance();
         ResourcePackList packList = mc.getResourcePackList();
-        IResourceManager resourceManager = mc.getResourceManager();
-        BlockResourceGenerator generator = this.buildGenerator(resourceManager);
-        RuntimeResourcePack resourcePack = new RuntimeResourcePack(generator, BiomeRivers.NAME, "Custom resources for fences");
-        addPackFinder(packList, resourcePack, BiomeRivers.MODID);
+        this.makeGenerator(mc.getResourceManager());
+        RuntimeResourcePack resourcePack = new RuntimeResourcePack(this.generator, "Diagonal Fences", "Diagonal fences?! Is this even allowed?");
+        this.addPackFinder(packList, resourcePack, BiomeRivers.MODID);
     }
 
-    private BlockResourceGenerator buildGenerator(IResourceManager resourceManager) {
+    private void onParticleFactoryRegister(final ParticleFactoryRegisterEvent evt) {
 
-        ResourceLocation baseModel = new ResourceLocation(BiomeRivers.MODID, "block/fence_diagonal_side");
-        ResourceLocation baseModelName = new ResourceLocation(baseModel.getNamespace(), "models/" + baseModel.getPath() + ".json");
-
-        Property<?>[] properties = IEightWayBlock.DIRECTION_TO_PROPERTY_MAP.values().stream().skip(4).toArray(Property<?>[]::new);
-        Property<?>[] parentProperties = IEightWayBlock.DIRECTION_TO_PROPERTY_MAP.values().stream().limit(4).toArray(Property<?>[]::new);
-        Set<Block> allFences = ForgeRegistries.BLOCKS.getValues().stream()
-                .filter(block -> block instanceof FenceBlock)
-                .collect(Collectors.toSet());
-
-        return new BlockResourceGenerator()
-                .addUnits(allFences, resourceManager, baseModel, "side")
-                .setProperties(properties, parentProperties)
-                .addResource(baseModelName, BlockResources.getDiagonalModel());
+        this.addUnits();
     }
 
-    private static void addPackFinder(ResourcePackList packList, RuntimeResourcePack resourcePack, String owner) {
+    private void makeGenerator(IResourceManager resourceManager) {
+
+        ResourceLocation baseModel = new ResourceLocation(BiomeRivers.MODID, "fence_diagonal_side");
+        this.generator = new BlockAssetGenerator(resourceManager)
+                .addResource(AssetLocations.getBlockModelPath(baseModel), BlockAssetProvider.getDiagonalModel());
+    }
+
+    private void addPackFinder(ResourcePackList packList, IResourceInfoFactory resourcePack, String owner) {
 
         packList.addPackFinder((infoConsumer, infoFactory) -> {
 
-            ResourcePackInfo resourcepackinfo = new ResourcePackInfo(owner, true, () -> resourcePack, new StringTextComponent(resourcePack.getName()),
-                    resourcePack.getDescription(), PackCompatibility.COMPATIBLE, ResourcePackInfo.Priority.TOP, true, IPackNameDecorator.BUILTIN, false);
-
+            ResourcePackInfo resourcepackinfo = resourcePack.createResourcePack(owner, true, ResourcePackInfo.Priority.TOP, true, true);
             infoConsumer.accept(resourcepackinfo);
         });
+    }
+
+    private void addUnits() {
+
+        Set<Block> allFences = ForgeRegistries.BLOCKS.getValues().stream()
+                .filter(block -> block instanceof FenceBlock)
+                .collect(Collectors.toSet());
+        ResourceLocation baseModel = new ResourceLocation(BiomeRivers.MODID, "fence_diagonal_side");
+        Property<?>[] newProperties = IEightWayBlock.DIRECTION_TO_PROPERTY_MAP.values().stream()
+                .skip(4)
+                .toArray(Property<?>[]::new);
+        Property<?>[] referenceProperties = IEightWayBlock.DIRECTION_TO_PROPERTY_MAP.values().stream()
+                .limit(4)
+                .toArray(Property<?>[]::new);
+        BlockStateModelUnit.ModelData modelData = new BlockStateModelUnit.ModelData(
+                AssetLocations.getBlockModelName(baseModel), "side", newProperties, referenceProperties);
+
+        this.generator.addUnits(allFences, modelData);
     }
 
 }

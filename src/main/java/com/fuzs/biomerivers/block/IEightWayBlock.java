@@ -1,9 +1,9 @@
 package com.fuzs.biomerivers.block;
 
+import com.fuzs.biomerivers.util.EightWayDirection;
 import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.FenceBlock;
 import net.minecraft.block.SixWayBlock;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -22,7 +22,9 @@ public interface IEightWayBlock {
     BooleanProperty SOUTH_EAST = BooleanProperty.create("south_east");
     BooleanProperty SOUTH_WEST = BooleanProperty.create("south_west");
     BooleanProperty NORTH_WEST = BooleanProperty.create("north_west");
+
     Map<EightWayDirection, BooleanProperty> DIRECTION_TO_PROPERTY_MAP = Util.make(Maps.newEnumMap(EightWayDirection.class), (directions) -> {
+
         directions.put(EightWayDirection.NORTH, SixWayBlock.NORTH);
         directions.put(EightWayDirection.EAST, SixWayBlock.EAST);
         directions.put(EightWayDirection.SOUTH, SixWayBlock.SOUTH);
@@ -84,7 +86,7 @@ public interface IEightWayBlock {
             Vector3i directionVec = direction.getDirectionVec();
             diagonalPos.setAndOffset(pos, directionVec.getX(), directionVec.getY(), directionVec.getZ());
             BlockState diagonalState = world.getBlockState(diagonalPos);
-            if (diagonalState.getBlock() instanceof FenceBlock) {
+            if (diagonalState.getBlock() instanceof IEightWayBlock) {
 
                 boolean isBlocked = false;
                 for (EightWayDirection cardinal : direction.opposite().getCardinals()) {
@@ -92,7 +94,7 @@ public interface IEightWayBlock {
                     isBlocked = isBlocked || diagonalState.get(DIRECTION_TO_PROPERTY_MAP.get(cardinal));
                 }
 
-                BlockState diagonalStateUpdated = diagonalState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.opposite()), !isBlocked && this.canConnectDiagonally(world.getBlockState(pos)));
+                BlockState diagonalStateUpdated = diagonalState.with(DIRECTION_TO_PROPERTY_MAP.get(direction.opposite()), !isBlocked && ((IEightWayBlock) diagonalState.getBlock()).canConnectDiagonally(world.getBlockState(pos)));
                 Block.replaceBlockState(diagonalState, diagonalStateUpdated, world, diagonalPos, flags, recursionLeft);
             }
         }
