@@ -32,7 +32,7 @@ classes
 *.ipr
 *.iws
 *.iml
-.idea
+**/.idea/*
 
 ### NetBeans ###
 nbproject/private/
