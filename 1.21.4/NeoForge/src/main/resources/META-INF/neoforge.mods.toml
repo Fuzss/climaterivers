@@ -45,5 +45,13 @@ versionRange = "[${minPuzzlesVersion},)"
 ordering = "NONE"
 side = "BOTH"
 
+[[dependencies.${ modId }]]
+modId = "terrablender"
+mandatory = true
+type = "required"
+versionRange = "*"
+ordering = "NONE"
+side = "BOTH"
+
 [modproperties.${ modId }]
 catalogueImageIcon = "mod_logo.png"

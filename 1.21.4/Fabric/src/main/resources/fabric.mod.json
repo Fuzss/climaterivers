@@ -27,6 +27,9 @@
     ],
     "client": [
       "${clientEntryPoint}"
+    ],
+    "terrablender": [
+      "${mainEntryPoint}"
     ]
   },
 
@@ -39,6 +42,7 @@
     "fabricloader": ">=${minFabricVersion}",
     "fabric-api": ">=${minFabricApiVersion}",
     "puzzleslib": ">=${minPuzzlesVersion}",
+    "terrablender": "*",
     "minecraft": "${minecraftVersion}",
     "java": ">=17"
   }
