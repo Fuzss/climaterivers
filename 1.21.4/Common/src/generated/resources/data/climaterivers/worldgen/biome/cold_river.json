@@ -60,9 +60,9 @@
       "minecraft:ore_lapis_buried",
       "minecraft:ore_copper",
       "minecraft:underwater_magma",
-      "minecraft:disk_sand",
+      "climaterivers:disk_sand",
       "minecraft:disk_clay",
-      "minecraft:disk_gravel"
+      "climaterivers:disk_gravel"
     ],
     [],
     [
@@ -75,6 +75,8 @@
       "minecraft:patch_grass_badlands",
       "minecraft:brown_mushroom_normal",
       "minecraft:red_mushroom_normal",
+      "minecraft:patch_sugar_cane",
+      "minecraft:patch_pumpkin",
       "minecraft:seagrass_river"
     ],
     [

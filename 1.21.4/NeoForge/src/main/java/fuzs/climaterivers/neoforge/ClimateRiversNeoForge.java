@@ -15,7 +15,8 @@ public class ClimateRiversNeoForge {
     public ClimateRiversNeoForge() {
         ModConstructor.construct(ClimateRivers.MOD_ID, ClimateRivers::new);
         DataProviderHelper.registerDataProviders(ClimateRivers.MOD_ID,
-                new RegistrySetBuilder().add(Registries.BIOME, ModRegistry::bootstrapBiomes),
+                new RegistrySetBuilder().add(Registries.PLACED_FEATURE, ModRegistry::bootstrapPlacedFeatures)
+                        .add(Registries.BIOME, ModRegistry::bootstrapBiomes),
                 ModBiomeTagProvider::new);
     }
 }

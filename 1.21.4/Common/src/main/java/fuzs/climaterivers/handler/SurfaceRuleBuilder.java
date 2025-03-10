@@ -27,7 +27,8 @@ public class SurfaceRuleBuilder {
         SurfaceRules.RuleSource ruleSource3 = SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.ON_CEILING, STONE),
                 GRAVEL);
 
-        // this defines top surface blocks:
+        // this defines top surface blocks
+        // we need dirt as the below water surface material, otherwise the disk features cannot be placed
         // warm ocean - top block sand / sandstone with dirt all below
         // lukewarm ocean - top block grass with dirt all below
         // cold ocean - top block gravel / stone with dirt all below

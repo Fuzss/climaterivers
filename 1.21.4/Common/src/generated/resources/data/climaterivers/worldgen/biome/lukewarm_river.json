@@ -71,8 +71,10 @@
     ],
     [
       "minecraft:glow_lichen",
+      "minecraft:bamboo_light",
       "minecraft:flower_default",
       "minecraft:patch_grass_badlands",
+      "minecraft:patch_waterlily",
       "minecraft:brown_mushroom_normal",
       "minecraft:red_mushroom_normal",
       "minecraft:seagrass_river"
@@ -161,10 +163,16 @@
     ],
     "water_ambient": [
       {
-        "type": "minecraft:salmon",
+        "type": "minecraft:tropical_fish",
         "maxCount": 5,
         "minCount": 1,
-        "weight": 5
+        "weight": 1
+      },
+      {
+        "type": "minecraft:cod",
+        "maxCount": 5,
+        "minCount": 1,
+        "weight": 4
       }
     ],
     "water_creature": [
