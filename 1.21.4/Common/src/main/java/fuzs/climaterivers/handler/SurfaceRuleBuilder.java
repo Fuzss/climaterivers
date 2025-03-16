@@ -18,29 +18,33 @@ public class SurfaceRuleBuilder {
     }
 
     public static SurfaceRules.RuleSource overworldLike() {
+        SurfaceRules.ConditionSource conditionSource8 = SurfaceRules.waterBlockCheck(-1, 0);
         SurfaceRules.ConditionSource conditionSource9 = SurfaceRules.waterBlockCheck(0, 0);
         SurfaceRules.ConditionSource conditionSource10 = SurfaceRules.waterStartCheck(-6, -1);
+        SurfaceRules.ConditionSource conditionSource14 = SurfaceRules.isBiome(ModRegistry.WARM_RIVER_BIOME);
 
-        SurfaceRules.RuleSource ruleSource = SurfaceRules.sequence(SurfaceRules.ifTrue(conditionSource9, GRASS_BLOCK), DIRT);
+        SurfaceRules.RuleSource ruleSource = SurfaceRules.sequence(SurfaceRules.ifTrue(conditionSource9, GRASS_BLOCK),
+                DIRT);
         SurfaceRules.RuleSource ruleSource2 = SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.ON_CEILING,
                 SANDSTONE), SAND);
         SurfaceRules.RuleSource ruleSource3 = SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.ON_CEILING, STONE),
                 GRAVEL);
 
-        // this defines top surface blocks
+        SurfaceRules.RuleSource ruleSource4 = SurfaceRules.sequence(SurfaceRules.ifTrue(conditionSource14, ruleSource2),
+                SurfaceRules.ifTrue(SurfaceRules.isBiome(ModRegistry.COLD_RIVER_BIOME), ruleSource3));
         // we need dirt as the below water surface material, otherwise the disk features cannot be placed
+        SurfaceRules.RuleSource ruleSource7 = SurfaceRules.sequence(SurfaceRules.ifTrue(conditionSource9, ruleSource4),
+                DIRT);
         // warm ocean - top block sand / sandstone with dirt all below
         // lukewarm ocean - top block grass with dirt all below
         // cold ocean - top block gravel / stone with dirt all below
-        SurfaceRules.RuleSource ruleSource7 = SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.isBiome(ModRegistry.WARM_RIVER_BIOME),
-                        SurfaceRules.sequence(SurfaceRules.ifTrue(conditionSource9, ruleSource2), DIRT)),
-                SurfaceRules.ifTrue(SurfaceRules.isBiome(ModRegistry.COLD_RIVER_BIOME),
-                        SurfaceRules.sequence(SurfaceRules.ifTrue(conditionSource9, ruleSource3), DIRT)),
-                ruleSource);
+        SurfaceRules.RuleSource ruleSource8 = SurfaceRules.sequence(ruleSource4, ruleSource);
 
-        SurfaceRules.RuleSource ruleSource9 = SurfaceRules.sequence(SurfaceRules.ifTrue(conditionSource10,
+        SurfaceRules.RuleSource ruleSource9 = SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR,
+                        SurfaceRules.ifTrue(conditionSource8, ruleSource8)),
+                SurfaceRules.ifTrue(conditionSource10,
                         SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.UNDER_FLOOR, ruleSource7),
-                                SurfaceRules.ifTrue(SurfaceRules.isBiome(ModRegistry.WARM_RIVER_BIOME),
+                                SurfaceRules.ifTrue(conditionSource14,
                                         SurfaceRules.ifTrue(SurfaceRules.DEEP_UNDER_FLOOR, SANDSTONE)))),
                 SurfaceRules.ifTrue(SurfaceRules.ON_FLOOR,
                         SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.isBiome(ModRegistry.WARM_RIVER_BIOME,
