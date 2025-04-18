@@ -1,7 +1,7 @@
 package fuzs.climaterivers.handler;
 
 import com.mojang.datafixers.util.Pair;
-import fuzs.climaterivers.init.ModRegistry;
+import fuzs.climaterivers.init.ModBiomes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -27,23 +27,23 @@ public class RiverBiomeBuilder {
     };
     static final ResourceKey<Biome>[][] UNFROZEN_RIVERS = new ResourceKey[][]{
             {null, null, null, null, null}, {
-            ModRegistry.COLD_RIVER_BIOME,
-            ModRegistry.COLD_RIVER_BIOME,
-            ModRegistry.COLD_RIVER_BIOME,
-            ModRegistry.COLD_RIVER_BIOME,
-            ModRegistry.COLD_RIVER_BIOME
+            ModBiomes.COLD_RIVER_BIOME,
+            ModBiomes.COLD_RIVER_BIOME,
+            ModBiomes.COLD_RIVER_BIOME,
+            ModBiomes.COLD_RIVER_BIOME,
+            ModBiomes.COLD_RIVER_BIOME
     }, {Biomes.RIVER, Biomes.RIVER, Biomes.RIVER, Biomes.RIVER, Biomes.RIVER}, {
-            ModRegistry.WARM_RIVER_BIOME,
-            ModRegistry.WARM_RIVER_BIOME,
+            ModBiomes.WARM_RIVER_BIOME,
+            ModBiomes.WARM_RIVER_BIOME,
             Biomes.RIVER,
-            ModRegistry.LUKEWARM_RIVER_BIOME,
-            ModRegistry.LUKEWARM_RIVER_BIOME
+            ModBiomes.LUKEWARM_RIVER_BIOME,
+            ModBiomes.LUKEWARM_RIVER_BIOME
     }, {
-            ModRegistry.WARM_RIVER_BIOME,
-            ModRegistry.WARM_RIVER_BIOME,
-            ModRegistry.WARM_RIVER_BIOME,
-            ModRegistry.WARM_RIVER_BIOME,
-            ModRegistry.WARM_RIVER_BIOME
+            ModBiomes.WARM_RIVER_BIOME,
+            ModBiomes.WARM_RIVER_BIOME,
+            ModBiomes.WARM_RIVER_BIOME,
+            ModBiomes.WARM_RIVER_BIOME,
+            ModBiomes.WARM_RIVER_BIOME
     }
     };
 

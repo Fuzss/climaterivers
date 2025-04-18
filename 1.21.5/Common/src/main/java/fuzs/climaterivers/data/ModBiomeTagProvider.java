@@ -1,6 +1,6 @@
 package fuzs.climaterivers.data;
 
-import fuzs.climaterivers.init.ModRegistry;
+import fuzs.climaterivers.init.ModBiomes;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;
 import fuzs.puzzleslib.api.data.v2.tags.AbstractTagProvider;
 import net.minecraft.core.HolderLookup;
@@ -17,8 +17,8 @@ public class ModBiomeTagProvider extends AbstractTagProvider<Biome> {
     @Override
     public void addTags(HolderLookup.Provider provider) {
         this.tag(BiomeTags.IS_RIVER)
-                .add(ModRegistry.COLD_RIVER_BIOME, ModRegistry.LUKEWARM_RIVER_BIOME, ModRegistry.WARM_RIVER_BIOME);
+                .add(ModBiomes.COLD_RIVER_BIOME, ModBiomes.LUKEWARM_RIVER_BIOME, ModBiomes.WARM_RIVER_BIOME);
         this.tag(BiomeTags.IS_OVERWORLD)
-                .add(ModRegistry.COLD_RIVER_BIOME, ModRegistry.LUKEWARM_RIVER_BIOME, ModRegistry.WARM_RIVER_BIOME);
+                .add(ModBiomes.COLD_RIVER_BIOME, ModBiomes.LUKEWARM_RIVER_BIOME, ModBiomes.WARM_RIVER_BIOME);
     }
 }
