@@ -16,9 +16,9 @@ public class ModBiomeTagProvider extends AbstractTagProvider<Biome> {
 
     @Override
     public void addTags(HolderLookup.Provider provider) {
-        this.tag(BiomeTags.IS_RIVER)
+        this.add(BiomeTags.IS_RIVER)
                 .add(ModBiomes.COLD_RIVER_BIOME, ModBiomes.LUKEWARM_RIVER_BIOME, ModBiomes.WARM_RIVER_BIOME);
-        this.tag(BiomeTags.IS_OVERWORLD)
+        this.add(BiomeTags.IS_OVERWORLD)
                 .add(ModBiomes.COLD_RIVER_BIOME, ModBiomes.LUKEWARM_RIVER_BIOME, ModBiomes.WARM_RIVER_BIOME);
     }
 }
