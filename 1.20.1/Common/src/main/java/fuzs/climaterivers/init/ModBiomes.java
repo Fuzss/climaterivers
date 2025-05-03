@@ -3,7 +3,7 @@ package fuzs.climaterivers.init;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
-import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.data.worldgen.biome.OverworldBiomes;
 import net.minecraft.data.worldgen.placement.AquaticPlacements;
 import net.minecraft.data.worldgen.placement.MiscOverworldPlacements;
@@ -26,7 +26,7 @@ public class ModBiomes {
     public static final ResourceKey<Biome> WARM_RIVER_BIOME = ModRegistry.REGISTRIES.makeResourceKey(Registries.BIOME,
             "warm_river");
 
-    public static void bootstrap(BootstrapContext<Biome> context) {
+    public static void bootstrap(BootstapContext<Biome> context) {
         HolderGetter<PlacedFeature> placedFeatureLookup = context.lookup(Registries.PLACED_FEATURE);
         HolderGetter<ConfiguredWorldCarver<?>> configuredCarverLookup = context.lookup(Registries.CONFIGURED_CARVER);
         context.register(COLD_RIVER_BIOME, coldRiver(placedFeatureLookup, configuredCarverLookup));

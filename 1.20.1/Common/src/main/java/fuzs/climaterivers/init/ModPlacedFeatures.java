@@ -3,7 +3,7 @@ package fuzs.climaterivers.init;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.data.worldgen.features.MiscOverworldFeatures;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
@@ -20,7 +20,7 @@ public class ModPlacedFeatures {
             Registries.PLACED_FEATURE,
             "disk_sand");
 
-    public static void bootstrap(BootstrapContext<PlacedFeature> context) {
+    public static void bootstrap(BootstapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> holderGetter = context.lookup(Registries.CONFIGURED_FEATURE);
         Holder<ConfiguredFeature<?, ?>> holder9 = holderGetter.getOrThrow(MiscOverworldFeatures.DISK_GRAVEL);
         Holder<ConfiguredFeature<?, ?>> holder10 = holderGetter.getOrThrow(MiscOverworldFeatures.DISK_SAND);

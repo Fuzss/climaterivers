@@ -1,7 +1,7 @@
 package fuzs.climaterivers.init;
 
 import fuzs.climaterivers.ClimateRivers;
-import fuzs.puzzleslib.api.init.v3.registry.RegistryManager;
+import fuzs.puzzleslib.api.init.v3.RegistryManager;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
 
