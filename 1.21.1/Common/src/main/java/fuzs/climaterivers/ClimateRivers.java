@@ -5,7 +5,6 @@ import fuzs.climaterivers.init.ModRegistry;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
-import fuzs.puzzleslib.api.event.v1.LoadCompleteCallback;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,18 +15,9 @@ public class ClimateRivers implements ModConstructor {
     public static final String MOD_NAME = "Climate Rivers";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-    public static boolean isLoadComplete;
-
     @Override
     public void onConstructMod() {
         ModRegistry.bootstrap();
-        registerEventHandlers();
-    }
-
-    private static void registerEventHandlers() {
-        LoadCompleteCallback.EVENT.register(() -> {
-            isLoadComplete = true;
-        });
     }
 
     @Override
