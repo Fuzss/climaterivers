@@ -27,9 +27,6 @@
     ],
     "client": [
       "${clientEntryPoint}"
-    ],
-    "terrablender": [
-      "${mainEntryPoint}"
     ]
   },
 
@@ -42,7 +39,7 @@
     "fabricloader": ">=${minFabricVersion}",
     "fabric-api": ">=${minFabricApiVersion}",
     "puzzleslib": ">=${minPuzzlesVersion}",
-    "terrablender": "*",
+    "biolith": "*",
     "minecraft": "${minecraftVersion}",
     "java": ">=17"
   }

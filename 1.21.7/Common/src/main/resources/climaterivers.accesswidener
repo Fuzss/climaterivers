@@ -1,1 +1,3 @@
 accessWidener   v2  named
+accessible  field   net/minecraft/world/level/biome/OverworldBiomeBuilder   temperatures    [Lnet/minecraft/world/level/biome/Climate$Parameter;
+accessible  field   net/minecraft/world/level/biome/OverworldBiomeBuilder   humidities  [Lnet/minecraft/world/level/biome/Climate$Parameter;

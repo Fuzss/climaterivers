@@ -50,6 +50,9 @@ public class SurfaceRuleBuilder {
                         SurfaceRules.sequence(SurfaceRules.ifTrue(SurfaceRules.isBiome(ModBiomes.WARM_RIVER_BIOME,
                                 ModBiomes.LUKEWARM_RIVER_BIOME), ruleSource2), ruleSource3)));
 
-        return SurfaceRules.ifTrue(SurfaceRules.abovePreliminarySurface(), ruleSource9);
+        return SurfaceRules.ifTrue(SurfaceRules.abovePreliminarySurface(),
+                SurfaceRules.ifTrue(SurfaceRules.isBiome(ModBiomes.COLD_RIVER_BIOME,
+                        ModBiomes.LUKEWARM_RIVER_BIOME,
+                        ModBiomes.WARM_RIVER_BIOME), ruleSource9));
     }
 }

@@ -4,6 +4,12 @@ dependencies {
     // Puzzles Lib
     modApi libs.puzzleslib.neoforge
 
-    // TerraBlender
-    modApi libs.terrablender.neoforge
+    // Biolith
+    modApi libs.biolith.neoforge
+}
+
+tasks.withType(net.fabricmc.loom.task.AbstractRunTask).configureEach {
+    doFirst {
+        patchLaunchCfg()
+    }
 }

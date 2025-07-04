@@ -7,6 +7,6 @@ dependencies {
     // Puzzles Lib
     modApi libs.puzzleslib.fabric
 
-    // TerraBlender
-    modApi libs.terrablender.fabric
+    // Biolith
+    modApi libs.biolith.fabric
 }

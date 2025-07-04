@@ -4,8 +4,8 @@ dependencies {
     // Puzzles Lib
     modApi libs.puzzleslib.common
 
-    // TerraBlender
-    modApi libs.terrablender.common
+    // Biolith
+    modApi libs.biolith.fabric
 }
 
 tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).configureEach {

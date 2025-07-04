@@ -6,25 +6,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
-import terrablender.api.ParameterUtils;
+import net.minecraft.world.level.biome.OverworldBiomeBuilder;
 
 import java.util.function.Consumer;
 
 public class RiverBiomeBuilder {
-    static final ParameterUtils.Temperature[] TEMPERATURES = {
-            ParameterUtils.Temperature.ICY,
-            ParameterUtils.Temperature.COOL,
-            ParameterUtils.Temperature.NEUTRAL,
-            ParameterUtils.Temperature.WARM,
-            ParameterUtils.Temperature.HOT
-    };
-    static final ParameterUtils.Humidity[] HUMIDITIES = {
-            ParameterUtils.Humidity.ARID,
-            ParameterUtils.Humidity.DRY,
-            ParameterUtils.Humidity.NEUTRAL,
-            ParameterUtils.Humidity.WET,
-            ParameterUtils.Humidity.HUMID,
-    };
     static final ResourceKey<Biome>[][] UNFROZEN_RIVERS = new ResourceKey[][]{
             {null, null, null, null, null}, {
             ModBiomes.COLD_RIVER_BIOME,
@@ -47,14 +33,14 @@ public class RiverBiomeBuilder {
     }
     };
 
-    public static void addRivers(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> mapper, Climate.Parameter continentalness, Climate.Parameter erosion, Climate.Parameter weirdness, float offset) {
-        for (int temperature = 0; temperature < TEMPERATURES.length; temperature++) {
-            for (int humidity = 0; humidity < HUMIDITIES.length; humidity++) {
+    public static void addRivers(OverworldBiomeBuilder biomeBuilder, Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> mapper, Climate.Parameter continentalness, Climate.Parameter erosion, Climate.Parameter weirdness, float offset) {
+        for (int temperature = 0; temperature < biomeBuilder.temperatures.length; temperature++) {
+            for (int humidity = 0; humidity < biomeBuilder.humidities.length; humidity++) {
                 ResourceKey<Biome> biome = UNFROZEN_RIVERS[temperature][humidity];
                 if (biome != null) {
                     addSurfaceBiome(mapper,
-                            TEMPERATURES[temperature].parameter(),
-                            HUMIDITIES[humidity].parameter(),
+                            biomeBuilder.temperatures[temperature],
+                            biomeBuilder.humidities[humidity],
                             continentalness,
                             erosion,
                             weirdness,
@@ -76,14 +62,14 @@ public class RiverBiomeBuilder {
                 humidity,
                 continentalness,
                 erosion,
-                ParameterUtils.Depth.SURFACE.parameter(),
+                Climate.Parameter.point(0.0F),
                 weirdness,
                 offset), biome));
         mapper.accept(Pair.of(Climate.parameters(temperature,
                 humidity,
                 continentalness,
                 erosion,
-                ParameterUtils.Depth.FLOOR.parameter(),
+                Climate.Parameter.point(1.0F),
                 weirdness,
                 offset), biome));
     }

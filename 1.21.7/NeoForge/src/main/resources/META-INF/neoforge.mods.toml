@@ -46,7 +46,7 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${ modId }]]
-modId = "terrablender"
+modId = "biolith"
 mandatory = true
 type = "required"
 versionRange = "*"
