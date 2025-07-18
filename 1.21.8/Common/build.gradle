@@ -5,7 +5,7 @@ dependencies {
     modApi libs.puzzleslib.common
 
     // Biolith
-    modApi libs.biolith.fabric
+    modApi libs.biolith.common
 }
 
 tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).configureEach {
