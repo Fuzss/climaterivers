@@ -1,4 +1,4 @@
-package fuzs.climaterivers.data;
+package fuzs.climaterivers.data.tags;
 
 import fuzs.climaterivers.init.ModBiomes;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;
@@ -8,9 +8,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.biome.Biome;
 
-public class ModBiomeTagProvider extends AbstractTagProvider<Biome> {
+public class ModBiomeTagsProvider extends AbstractTagProvider<Biome> {
 
-    public ModBiomeTagProvider(DataProviderContext context) {
+    public ModBiomeTagsProvider(DataProviderContext context) {
         super(Registries.BIOME, context);
     }
 

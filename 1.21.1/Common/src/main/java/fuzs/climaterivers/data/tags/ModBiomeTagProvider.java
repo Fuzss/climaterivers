@@ -1,4 +1,4 @@
-package fuzs.climaterivers.data;
+package fuzs.climaterivers.data.tags;
 
 import fuzs.climaterivers.init.ModBiomes;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;
