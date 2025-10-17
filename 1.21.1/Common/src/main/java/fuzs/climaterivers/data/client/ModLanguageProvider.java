@@ -3,7 +3,6 @@ package fuzs.climaterivers.data.client;
 import fuzs.climaterivers.init.ModBiomes;
 import fuzs.puzzleslib.api.client.data.v2.AbstractLanguageProvider;
 import fuzs.puzzleslib.api.data.v2.core.DataProviderContext;
-import net.minecraft.core.registries.Registries;
 
 public class ModLanguageProvider extends AbstractLanguageProvider {
 
@@ -13,10 +12,8 @@ public class ModLanguageProvider extends AbstractLanguageProvider {
 
     @Override
     public void addTranslations(TranslationBuilder translationBuilder) {
-        translationBuilder.add(Registries.elementsDirPath(Registries.BIOME), ModBiomes.COLD_RIVER_BIOME, "Cold River");
-        translationBuilder.add(Registries.elementsDirPath(Registries.BIOME),
-                ModBiomes.LUKEWARM_RIVER_BIOME,
-                "Lukewarm River");
-        translationBuilder.add(Registries.elementsDirPath(Registries.BIOME), ModBiomes.WARM_RIVER_BIOME, "Warm River");
+        translationBuilder.add("biome", ModBiomes.COLD_RIVER_BIOME.location(), "Cold River");
+        translationBuilder.add("biome", ModBiomes.LUKEWARM_RIVER_BIOME.location(), "Lukewarm River");
+        translationBuilder.add("biome", ModBiomes.WARM_RIVER_BIOME.location(), "Warm River");
     }
 }
