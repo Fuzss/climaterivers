@@ -1,0 +1,6 @@
+// 1.21.10	2025-10-08T22:30:01.99787	Registries
+5a07e28f0cbe87e61b5b6689ed21e6e1067686c9 data/climaterivers/worldgen/biome/cold_river.json
+a8f3b2baca9d3c4f204a286a98e95acbb29f074f data/climaterivers/worldgen/biome/lukewarm_river.json
+1f8a6e12ff4c758fd0b5c83f6db2faf0490cae22 data/climaterivers/worldgen/biome/warm_river.json
+14839e7e0a7653303c9bfd0b109d2e9ed945d86f data/climaterivers/worldgen/placed_feature/disk_gravel.json
+7207ed827d093edf9dfd4632f5faa6efb0cc10fd data/climaterivers/worldgen/placed_feature/disk_sand.json
