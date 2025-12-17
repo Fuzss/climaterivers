@@ -1,5 +1,6 @@
 package fuzs.climaterivers.init;
 
+import fuzs.climaterivers.ClimateRivers;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
@@ -13,18 +14,19 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class ModBiomes {
-    public static final ResourceKey<Biome> COLD_RIVER_BIOME = ModRegistry.REGISTRIES.makeResourceKey(Registries.BIOME,
-            "cold_river");
-    public static final ResourceKey<Biome> LUKEWARM_RIVER_BIOME = ModRegistry.REGISTRIES.makeResourceKey(Registries.BIOME,
-            "lukewarm_river");
-    public static final ResourceKey<Biome> WARM_RIVER_BIOME = ModRegistry.REGISTRIES.makeResourceKey(Registries.BIOME,
-            "warm_river");
+    public static final ResourceKey<Biome> COLD_RIVER_BIOME = ResourceKey.create(Registries.BIOME,
+            ClimateRivers.id("cold_river"));
+    public static final ResourceKey<Biome> LUKEWARM_RIVER_BIOME = ResourceKey.create(Registries.BIOME,
+            ClimateRivers.id("lukewarm_river"));
+    public static final ResourceKey<Biome> WARM_RIVER_BIOME = ResourceKey.create(Registries.BIOME,
+            ClimateRivers.id("warm_river"));
 
     public static void bootstrap(BootstrapContext<Biome> context) {
         HolderGetter<PlacedFeature> placedFeatureLookup = context.lookup(Registries.PLACED_FEATURE);
@@ -46,7 +48,12 @@ public class ModBiomes {
         BiomeDefaultFeatures.addDefaultExtraVegetation(builder2, true);
         builder2.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_RIVER);
 
-        return OverworldBiomes.biome(true, 0.25F, 0.8F, 4020182, 329011, null, null, null, builder, builder2, null);
+        return OverworldBiomes.baseBiome(0.25F, 0.8F)
+                .hasPrecipitation(true)
+                .specialEffects(new BiomeSpecialEffects.Builder().waterColor(4020182).build())
+                .mobSpawnSettings(builder.build())
+                .generationSettings(builder2.build())
+                .build();
     }
 
     public static Biome lukeWarmRiver(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<ConfiguredWorldCarver<?>> worldCarvers) {
@@ -65,7 +72,12 @@ public class ModBiomes {
         BiomeDefaultFeatures.addDefaultMushrooms(builder2);
         builder2.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_RIVER);
 
-        return OverworldBiomes.biome(true, 0.95F, 0.9F, 4566514, 267827, null, null, null, builder, builder2, null);
+        return OverworldBiomes.baseBiome(0.95F, 0.9F)
+                .hasPrecipitation(true)
+                .specialEffects(new BiomeSpecialEffects.Builder().waterColor(4566514).build())
+                .mobSpawnSettings(builder.build())
+                .generationSettings(builder2.build())
+                .build();
     }
 
     public static Biome warmRiver(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<ConfiguredWorldCarver<?>> worldCarvers) {
@@ -82,7 +94,12 @@ public class ModBiomes {
         BiomeDefaultFeatures.addDefaultMushrooms(builder2);
         builder2.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_RIVER);
 
-        return OverworldBiomes.biome(false, 2.0F, 0.0F, 4445678, 270131, null, null, null, builder, builder2, null);
+        return OverworldBiomes.baseBiome(2.0F, 0.0F)
+                .hasPrecipitation(false)
+                .specialEffects(new BiomeSpecialEffects.Builder().waterColor(4445678).build())
+                .mobSpawnSettings(builder.build())
+                .generationSettings(builder2.build())
+                .build();
     }
 
     public static MobSpawnSettings.Builder riverSpawns() {

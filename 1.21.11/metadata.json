@@ -1,0 +1,69 @@
+{
+    "mod": {
+        "id": "climaterivers",
+        "group": "fuzs.climaterivers",
+        "name": "Climate Rivers",
+        "version": "21.11.0",
+        "authors": [
+            "Fuzs"
+        ],
+        "description": "Make your rivers stop looking like mistakes-and start flowing with style.",
+        "license": "MPL-2.0"
+    },
+    "dependencies": [
+        {
+            "name": "biolith",
+            "type": "required",
+            "platforms": [
+                "fabric",
+                "neoforge"
+            ]
+        },
+        {
+            "name": "fabricapi",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "forgeconfigapiport",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "puzzleslib",
+            "type": "required",
+            "platforms": [
+                "fabric",
+                "neoforge"
+            ]
+        }
+    ],
+    "links": [
+        {
+            "name": "github",
+            "slug": "climaterivers"
+        },
+        {
+            "name": "curseforge",
+            "slug": "climate-rivers",
+            "id": "1255421"
+        },
+        {
+            "name": "modrinth",
+            "slug": "climate-rivers",
+            "id": "DzZWws4q"
+        }
+    ],
+    "environments": {
+        "client": "unsupported",
+        "server": "required"
+    },
+    "platforms": [
+        "fabric",
+        "neoforge"
+    ]
+}

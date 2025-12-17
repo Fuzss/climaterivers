@@ -12,8 +12,8 @@ public class ModLanguageProvider extends AbstractLanguageProvider {
 
     @Override
     public void addTranslations(TranslationBuilder translationBuilder) {
-        translationBuilder.add("biome", ModBiomes.COLD_RIVER_BIOME.location(), "Cold River");
-        translationBuilder.add("biome", ModBiomes.LUKEWARM_RIVER_BIOME.location(), "Lukewarm River");
-        translationBuilder.add("biome", ModBiomes.WARM_RIVER_BIOME.location(), "Warm River");
+        translationBuilder.addBiome(ModBiomes.COLD_RIVER_BIOME, "Cold River");
+        translationBuilder.addBiome(ModBiomes.LUKEWARM_RIVER_BIOME, "Lukewarm River");
+        translationBuilder.addBiome(ModBiomes.WARM_RIVER_BIOME, "Warm River");
     }
 }

@@ -1,5 +1,6 @@
 package fuzs.climaterivers.init;
 
+import fuzs.climaterivers.ClimateRivers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
@@ -13,12 +14,10 @@ import net.minecraft.world.level.levelgen.placement.*;
 import net.minecraft.world.level.material.Fluids;
 
 public class ModPlacedFeatures {
-    public static final ResourceKey<PlacedFeature> DISK_GRAVEL_PLACED_FEATURE = ModRegistry.REGISTRIES.makeResourceKey(
-            Registries.PLACED_FEATURE,
-            "disk_gravel");
-    public static final ResourceKey<PlacedFeature> DISK_SAND_PLACED_FEATURE = ModRegistry.REGISTRIES.makeResourceKey(
-            Registries.PLACED_FEATURE,
-            "disk_sand");
+    public static final ResourceKey<PlacedFeature> DISK_GRAVEL_PLACED_FEATURE = ResourceKey.create(Registries.PLACED_FEATURE,
+            ClimateRivers.id("disk_gravel"));
+    public static final ResourceKey<PlacedFeature> DISK_SAND_PLACED_FEATURE = ResourceKey.create(Registries.PLACED_FEATURE,
+            ClimateRivers.id("disk_sand"));
 
     public static void bootstrap(BootstrapContext<PlacedFeature> context) {
         HolderGetter<ConfiguredFeature<?, ?>> holderGetter = context.lookup(Registries.CONFIGURED_FEATURE);
